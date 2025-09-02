@@ -7,9 +7,9 @@ All colors MUST be HSL. */
 
 @layer base {
   :root {
-    /* Core Brand Colors */
-    --background: 220 25% 6%;
-    --foreground: 210 40% 98%;
+    /* Light Theme */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     
     /* Brand Primary - Deep Blues to Purple Gradient */
     --primary: 237 100% 60%;
@@ -17,30 +17,30 @@ All colors MUST be HSL. */
     --primary-glow: 250 100% 75%;
     
     /* Secondary - Sophisticated Grays */
-    --secondary: 220 15% 15%;
-    --secondary-foreground: 210 25% 88%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
     
     /* Accent - Electric Purple */
     --accent: 270 100% 70%;
     --accent-foreground: 210 40% 98%;
     
     /* Surface Colors */
-    --card: 220 20% 8%;
-    --card-foreground: 210 25% 88%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
     
-    --popover: 220 20% 8%;
-    --popover-foreground: 210 25% 88%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
     
     /* Interactive States */
-    --muted: 220 15% 12%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
     
-    --border: 220 15% 18%;
-    --input: 220 15% 18%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
     --ring: 237 100% 60%;
     
     /* Status Colors */
-    --destructive: 0 84% 60%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     
     --success: 142 76% 36%;
@@ -51,17 +51,82 @@ All colors MUST be HSL. */
     
     /* Gradients - Brand Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(237, 100%, 60%) 0%, hsl(270, 100%, 70%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(220, 15%, 15%) 0%, hsl(220, 20%, 8%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(210, 40%, 96%) 0%, hsl(0, 0%, 100%) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(237, 100%, 60%) 0%, hsl(250, 100%, 75%) 50%, hsl(270, 100%, 70%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(220, 20%, 8%) 0%, hsl(220, 15%, 12%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(0, 0%, 100%) 0%, hsl(210, 40%, 96%) 100%);
     
     /* Glass Effects */
-    --glass-bg: hsla(220, 20%, 10%, 0.7);
-    --glass-border: hsla(210, 25%, 88%, 0.1);
+    --glass-bg: hsla(0, 0%, 100%, 0.7);
+    --glass-border: hsla(222.2, 84%, 4.9%, 0.1);
     
     /* Shadows */
     --shadow-primary: 0 10px 40px -10px hsl(237 100% 60% / 0.3);
-    --shadow-card: 0 8px 32px -8px hsl(220 25% 6% / 0.6);
+    --shadow-card: 0 8px 32px -8px hsl(0 0% 0% / 0.1);
+    --shadow-glow: 0 0 60px hsl(250 100% 75% / 0.4);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    --radius: 1rem;
+  }
+
+  .dark {
+    /* Core Brand Colors */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    
+    /* Brand Primary - Deep Blues to Purple Gradient */
+    --primary: 237 100% 60%;
+    --primary-foreground: 210 40% 98%;
+    --primary-glow: 250 100% 75%;
+    
+    /* Secondary - Sophisticated Grays */
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    
+    /* Accent - Electric Purple */
+    --accent: 270 100% 70%;
+    --accent-foreground: 210 40% 98%;
+    
+    /* Surface Colors */
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    
+    /* Interactive States */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 237 100% 60%;
+    
+    /* Status Colors */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 222.2 84% 4.9%;
+    
+    /* Gradients - Brand Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(237, 100%, 60%) 0%, hsl(270, 100%, 70%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(217.2, 32.6%, 17.5%) 0%, hsl(222.2, 84%, 4.9%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(237, 100%, 60%) 0%, hsl(250, 100%, 75%) 50%, hsl(270, 100%, 70%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(222.2, 84%, 4.9%) 0%, hsl(217.2, 32.6%, 17.5%) 100%);
+    
+    /* Glass Effects */
+    --glass-bg: hsla(222.2, 84%, 4.9%, 0.7);
+    --glass-border: hsla(210, 40%, 98%, 0.1);
+    
+    /* Shadows */
+    --shadow-primary: 0 10px 40px -10px hsl(237 100% 60% / 0.3);
+    --shadow-card: 0 8px 32px -8px hsl(222.2 84% 4.9% / 0.6);
     --shadow-glow: 0 0 60px hsl(250 100% 75% / 0.4);
     
     /* Animations */

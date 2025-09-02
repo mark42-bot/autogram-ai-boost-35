@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { 
   Menu, 
   X, 
@@ -16,6 +17,7 @@ import { cn } from '@/lib/utils';
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
+  const [isProductsClicked, setIsProductsClicked] = useState(false);
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -60,22 +62,33 @@ const Navigation = () => {
                   <div
                     className="relative"
                     onMouseEnter={() => setIsProductsOpen(true)}
-                    onMouseLeave={() => setIsProductsOpen(false)}
+                    onMouseLeave={() => !isProductsClicked && setIsProductsOpen(false)}
                   >
-                    <button className="flex items-center space-x-1 text-foreground/80 hover:text-foreground transition-smooth">
+                    <button 
+                      onClick={() => {
+                        setIsProductsClicked(!isProductsClicked);
+                        setIsProductsOpen(!isProductsOpen);
+                      }}
+                      className="flex items-center space-x-1 text-foreground/80 hover:text-foreground transition-smooth group"
+                    >
                       <span>{item.name}</span>
-                      <ChevronDown className="w-4 h-4" />
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isProductsOpen ? 'rotate-180' : ''} group-hover:scale-110`} />
                     </button>
                     
                     {isProductsOpen && (
-                      <div className="absolute top-full left-0 mt-2 w-64 glass rounded-lg shadow-card p-2 border border-border/20">
-                        {item.dropdownItems?.map((subItem) => (
+                      <div className="absolute top-full left-0 mt-2 w-64 glass rounded-lg shadow-card p-2 border border-border/20 animate-scale-in">
+                        {item.dropdownItems?.map((subItem, index) => (
                           <Link
                             key={subItem.name}
                             to={subItem.href}
-                            className="flex items-center space-x-3 px-3 py-2 text-sm rounded-md hover:bg-muted/50 transition-smooth"
+                            className="flex items-center space-x-3 px-3 py-2 text-sm rounded-md hover:bg-muted/50 transition-smooth hover-scale"
+                            style={{ animationDelay: `${index * 50}ms` }}
+                            onClick={() => {
+                              setIsProductsOpen(false);
+                              setIsProductsClicked(false);
+                            }}
                           >
-                            <subItem.icon className="w-4 h-4 text-primary" />
+                            <subItem.icon className="w-4 h-4 text-primary animate-float" />
                             <span>{subItem.name}</span>
                           </Link>
                         ))}
@@ -99,6 +112,7 @@ const Navigation = () => {
 
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
             <Link to="/login">
               <Button variant="ghost" size="sm">
                 Login

@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   Workflow, 
@@ -8,28 +9,48 @@ import {
   Shield,
   ArrowRight,
   GitBranch,
-  Eye
+  Eye,
+  Clock,
+  UserCheck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const WorkflowPage = () => {
+  const [activeDemo, setActiveDemo] = useState('approval');
+  
   const features = [
     {
       icon: GitBranch,
       title: 'Approval Workflows',
-      description: 'Set up custom approval processes to ensure all content meets your brand standards.'
+      description: 'Set up custom approval processes to ensure all content meets your brand standards.',
+      id: 'approval'
     },
     {
       icon: Users,
       title: 'Team Collaboration',
-      description: 'Work seamlessly with your team members, assign roles, and manage permissions.'
+      description: 'Work seamlessly with your team members, assign roles, and manage permissions.',
+      id: 'collaboration'
     },
     {
       icon: Eye,
       title: 'Content Review',
-      description: 'Preview, review, and approve content before it goes live to maintain quality control.'
+      description: 'Preview, review, and approve content before it goes live to maintain quality control.',
+      id: 'review'
     }
   ];
+
+  const workflowData = {
+    approvals: [
+      { title: 'Summer Campaign Post', status: 'pending', assignee: 'Sarah Chen', submitted: '2 hours ago' },
+      { title: 'Product Launch Video', status: 'approved', assignee: 'Mike Johnson', submitted: '1 day ago' },
+      { title: 'Customer Testimonial', status: 'needs_revision', assignee: 'Lisa Park', submitted: '3 hours ago' }
+    ],
+    team: [
+      { name: 'Sarah Chen', role: 'Content Creator', posts: 24, status: 'online' },
+      { name: 'Mike Johnson', role: 'Social Media Manager', posts: 18, status: 'away' },
+      { name: 'Lisa Park', role: 'Brand Manager', posts: 12, status: 'online' }
+    ]
+  };
 
   return (
     <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
