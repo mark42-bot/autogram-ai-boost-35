@@ -29,19 +29,19 @@ const AIContentPage = () => {
       icon: MessageSquare,
       title: 'AI Caption Generation',
       description: 'Generate engaging, on-brand captions that match your unique voice and style.',
-      id: 'captions'
+      id: 'ai-caption'
     },
     {
       icon: Hash,
       title: 'Smart Hashtag Research',
       description: 'Discover trending and niche hashtags optimized for your content and audience.',
-      id: 'hashtags'
+      id: 'smart-hashtag'
     },
     {
       icon: Image,
       title: 'Content Ideas',
       description: 'Never run out of ideas with AI-powered content suggestions tailored to your niche.',
-      id: 'ideas'
+      id: 'content-ideas'
     }
   ];
 
@@ -96,127 +96,53 @@ const AIContentPage = () => {
       {/* Interactive Features Demo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
         {features.map((feature) => (
-          <Card 
-            key={feature.title} 
-            className={`glass border-border/20 hover-scale transition-smooth cursor-pointer ${
-              activeDemo === feature.id ? 'ring-2 ring-primary border-primary/50' : ''
-            }`}
-            onClick={() => setActiveDemo(feature.id)}
-          >
-            <CardContent className="p-8 text-center">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 ${
-                activeDemo === feature.id ? 'gradient-primary animate-pulse-glow' : 'bg-muted'
-              }`}>
-                <feature.icon className={`w-8 h-8 transition-colors duration-300 ${
-                  activeDemo === feature.id ? 'text-white' : 'text-muted-foreground'
-                }`} />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-              {activeDemo === feature.id && (
-                <Badge className="mt-4 gradient-primary">
-                  Try Demo Below
+          <Link key={feature.title} to={`/features/${feature.id}`}>
+            <Card className="glass border-border/20 hover-scale transition-smooth cursor-pointer h-full">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-6 transition-all duration-300 hover:gradient-primary group">
+                  <feature.icon className="w-8 h-8 text-muted-foreground group-hover:text-white transition-colors duration-300" />
+                </div>
+                <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
+                <p className="text-muted-foreground mb-4">{feature.description}</p>
+                <Badge className="gradient-primary">
+                  <ArrowRight className="w-4 h-4 mr-1" />
+                  View Examples
                 </Badge>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
-      {/* Live Demo Section */}
+      {/* Features Overview */}
       <Card className="glass border-border/20 mb-16">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-3 text-2xl">
-            <Wand2 className="w-6 h-6 text-primary animate-float" />
-            Live AI Demo - {features.find(f => f.id === activeDemo)?.title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Input Section */}
-          <div className="space-y-4">
-            <label className="text-sm font-medium text-muted-foreground">
-              {activeDemo === 'captions' ? 'Describe your content:' : 
-               activeDemo === 'hashtags' ? 'Enter your topic:' : 
-               'Enter your niche/interest:'}
-            </label>
-            <div className="flex gap-2">
-              <Input
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder={
-                  activeDemo === 'captions' ? 'e.g., Coffee shop morning vibes' :
-                  activeDemo === 'hashtags' ? 'e.g., Coffee, Morning routine' :
-                  'e.g., Coffee, Lifestyle, Photography'
-                }
-                className="glass border-border/20"
-              />
-              <Button 
-                onClick={simulateGeneration}
-                disabled={isGenerating || !inputText.trim()}
-                className="gradient-primary hover-glow"
-              >
-                {isGenerating ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Sparkles className="w-4 h-4" />
-                )}
-                Generate
-              </Button>
+        <CardContent className="p-8 text-center">
+          <h2 className="text-3xl font-bold mb-4">Powerful AI Content Tools</h2>
+          <p className="text-muted-foreground text-lg mb-8">
+            Click on any feature above to see live examples and interactive demos of how our AI creates content that converts.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center mx-auto mb-3">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <h4 className="font-semibold mb-2">AI-Powered</h4>
+              <p className="text-sm text-muted-foreground">Advanced algorithms analyze your content and generate personalized results</p>
             </div>
-          </div>
-
-          {/* Results Section */}
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold flex items-center gap-2">
-              <Bot className="w-5 h-5 text-primary" />
-              AI Generated Results
-            </h4>
-            
-            {activeDemo === 'captions' && (
-              <div className="space-y-3">
-                {demoData.captions.map((caption, index) => (
-                  <Card key={index} className="glass border-border/20 p-4 hover-scale transition-smooth">
-                    <div className="flex justify-between items-start gap-3">
-                      <p className="text-sm leading-relaxed flex-1">{caption}</p>
-                      <Button size="sm" variant="ghost" className="hover:bg-primary/20">
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
+            <div className="text-center">
+              <div className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center mx-auto mb-3">
+                <Target className="w-6 h-6 text-white" />
               </div>
-            )}
-
-            {activeDemo === 'hashtags' && (
-              <Card className="glass border-border/20 p-4">
-                <div className="flex flex-wrap gap-2">
-                  {demoData.hashtags[0].split(' ').map((hashtag, index) => (
-                    <Badge key={index} variant="outline" className="hover-scale cursor-pointer border-primary/50 hover:bg-primary/20">
-                      {hashtag}
-                    </Badge>
-                  ))}
-                </div>
-                <Button size="sm" className="mt-3 gradient-primary">
-                  <Copy className="w-4 h-4 mr-2" />
-                  Copy All Hashtags
-                </Button>
-              </Card>
-            )}
-
-            {activeDemo === 'ideas' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {demoData.ideas.map((idea, index) => (
-                  <Card key={index} className="glass border-border/20 p-4 hover-scale transition-smooth cursor-pointer hover:border-primary/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-sm font-bold">{index + 1}</span>
-                      </div>
-                      <p className="text-sm">{idea}</p>
-                    </div>
-                  </Card>
-                ))}
+              <h4 className="font-semibold mb-2">Brand-Aligned</h4>
+              <p className="text-sm text-muted-foreground">Content that matches your unique voice and brand personality</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 gradient-primary rounded-full flex items-center justify-center mx-auto mb-3">
+                <Zap className="w-6 h-6 text-white" />
               </div>
-            )}
+              <h4 className="font-semibold mb-2">Instant Results</h4>
+              <p className="text-sm text-muted-foreground">Generate multiple variations in seconds, not hours</p>
+            </div>
           </div>
         </CardContent>
       </Card>

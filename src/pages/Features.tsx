@@ -1,6 +1,9 @@
 import { Routes, Route } from 'react-router-dom';
 import Navigation from '@/components/ui/navigation';
 import AIContentPage from './features/AIContentPage';
+import AICaptionPage from './features/AICaptionPage';
+import SmartHashtagPage from './features/SmartHashtagPage';
+import ContentIdeasPage from './features/ContentIdeasPage';
 import AnalyticsPage from './features/AnalyticsPage';
 import SchedulingPage from './features/SchedulingPage';
 import WorkflowPage from './features/WorkflowPage';
@@ -13,6 +16,9 @@ const Features = () => {
       <main className="pt-20">
         <Routes>
           <Route path="ai-content" element={<AIContentPage />} />
+          <Route path="ai-caption" element={<AICaptionPage />} />
+          <Route path="smart-hashtag" element={<SmartHashtagPage />} />
+          <Route path="content-ideas" element={<ContentIdeasPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="scheduling" element={<SchedulingPage />} />
           <Route path="workflow" element={<WorkflowPage />} />
