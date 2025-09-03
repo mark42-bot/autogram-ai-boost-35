@@ -91,13 +91,21 @@ const SchedulingPage = () => {
       {/* Interactive Features Demo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
         {features.map((feature) => (
-          <Card 
-            key={feature.title} 
-            className={`glass border-border/20 hover-scale transition-smooth cursor-pointer ${
-              activeFeature === feature.id ? 'ring-2 ring-primary border-primary/50' : ''
-            }`}
-            onClick={() => setActiveFeature(feature.id)}
-          >
+          <Link key={feature.title} to={`/features/${feature.id === 'timing' ? 'optimal-timing' : feature.id === 'timezone' ? 'multi-timezone' : 'bulk-scheduling'}`}>
+            <Card className="glass border-border/20 hover-scale transition-smooth cursor-pointer">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                  <feature.icon className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
+                <Button className="mt-4 gradient-primary">
+                  See Examples
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
             <CardContent className="p-8 text-center">
               <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 ${
                 activeFeature === feature.id ? 'gradient-primary animate-pulse-glow' : 'bg-muted'
