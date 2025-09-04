@@ -1,4 +1,4 @@
-import { useState, useRef, Suspense } from 'react';
+import { useState, useRef, Suspense, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Text, Box, Sphere, Plane } from '@react-three/drei';
 import { Button } from '@/components/ui/button';
@@ -22,77 +22,204 @@ import {
   Clock
 } from 'lucide-react';
 
-// 3D Tutorial Model Component
+// Interactive 3D Website Tour Model
 const TutorialModel = ({ currentStep }: { currentStep: number }) => {
-  const laptopRef = useRef<any>();
-  const phoneRef = useRef<any>();
+  const mainDeviceRef = useRef<any>();
+  const [time, setTime] = useState(0);
 
-  const steps = [
-    { position: [0, 0, 0], color: '#3b82f6', scale: 1 },
-    { position: [-2, 0, 0], color: '#8b5cf6', scale: 1.2 },
-    { position: [2, 0, 0], color: '#06d6a0', scale: 1.1 },
-    { position: [0, 2, 0], color: '#f72585', scale: 0.9 },
-    { position: [0, -2, 0], color: '#ffbe0b', scale: 1.3 }
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(prev => prev + 0.016);
+    }, 16);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Website sections that the tour covers
+  const tourSteps = [
+    { 
+      position: [0, 0, 0], 
+      color: '#3b82f6', 
+      scale: 1.2,
+      title: "Dashboard",
+      description: "Main control center"
+    },
+    { 
+      position: [-3, 0.5, 0], 
+      color: '#8b5cf6', 
+      scale: 1,
+      title: "Upload Content",
+      description: "Start your workflow"
+    },
+    { 
+      position: [3, 0.5, 0], 
+      color: '#06d6a0', 
+      scale: 1.1,
+      title: "AI Generation",
+      description: "Smart captions & hashtags"
+    },
+    { 
+      position: [0, 2, 1], 
+      color: '#f72585', 
+      scale: 0.9,
+      title: "Schedule Posts",
+      description: "Optimal timing"
+    },
+    { 
+      position: [-2, -1, 1], 
+      color: '#ffbe0b', 
+      scale: 1,
+      title: "Analytics",
+      description: "Performance insights"
+    },
+    { 
+      position: [2, -1, -1], 
+      color: '#ff6b6b', 
+      scale: 1.1,
+      title: "Team Workflow",
+      description: "Collaboration tools"
+    },
+    { 
+      position: [0, 1.5, -2], 
+      color: '#4ecdc4', 
+      scale: 1,
+      title: "Automation",
+      description: "Smart workflows"
+    },
+    { 
+      position: [0, 0, 0], 
+      color: '#45b7d1', 
+      scale: 1.3,
+      title: "Launch Success",
+      description: "Your first campaign"
+    }
   ];
 
-  const currentStepData = steps[currentStep % steps.length];
+  const currentStepData = tourSteps[currentStep] || tourSteps[0];
 
   return (
     <group>
-      {/* Main Platform */}
-      <Plane ref={laptopRef} args={[8, 6]} position={[0, -1, 0] as [number, number, number]} rotation={[-Math.PI / 2, 0, 0] as [number, number, number]}>
-        <meshStandardMaterial color="#f1f5f9" transparent opacity={0.8} />
+      {/* Main Platform representing website interface */}
+      <Plane 
+        args={[10, 8]} 
+        position={[0, -2, 0]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <meshStandardMaterial 
+          color="#1e293b" 
+          transparent 
+          opacity={0.1}
+          wireframe={true}
+        />
       </Plane>
 
-      {/* Central Device (Laptop/Phone) */}
+      {/* Central main device (represents current page/feature) */}
       <Box 
+        ref={mainDeviceRef}
         position={currentStepData.position as [number, number, number]} 
         scale={currentStepData.scale}
-        rotation={[0, Math.sin(Date.now() * 0.001) * 0.2, 0] as [number, number, number]}
+        rotation={[
+          Math.sin(time * 0.5) * 0.1, 
+          time * 0.3, 
+          Math.cos(time * 0.3) * 0.05
+        ]}
       >
-        <meshStandardMaterial color={currentStepData.color} />
+        <meshStandardMaterial 
+          color={currentStepData.color}
+          emissive={currentStepData.color}
+          emissiveIntensity={0.2}
+        />
       </Box>
 
-      {/* Floating UI Elements */}
-      <Sphere position={[-3, 1, 1]} scale={0.3}>
-        <meshStandardMaterial color="#3b82f6" emissive="#3b82f6" emissiveIntensity={0.3} />
-      </Sphere>
-      
-      <Sphere position={[3, 1, -1]} scale={0.4}>
-        <meshStandardMaterial color="#8b5cf6" emissive="#8b5cf6" emissiveIntensity={0.3} />
-      </Sphere>
-
-      <Sphere position={[0, 3, 0]} scale={0.2}>
-        <meshStandardMaterial color="#06d6a0" emissive="#06d6a0" emissiveIntensity={0.3} />
-      </Sphere>
-
-      {/* Animated Connection Lines */}
-      <group>
-        {[...Array(5)].map((_, i) => (
-          <Box 
-            key={i}
+      {/* Interactive UI Elements floating around */}
+      {tourSteps.map((step, index) => (
+        <group key={index}>
+          <Sphere 
             position={[
-              Math.cos(i * (Math.PI * 2) / 5) * 2,
-              Math.sin(Date.now() * 0.002 + i) * 0.5,
-              Math.sin(i * (Math.PI * 2) / 5) * 2
-            ]}
-            scale={[0.1, 0.1, 0.1]}
+              step.position[0] + Math.cos(time + index) * 0.5,
+              step.position[1] + Math.sin(time * 0.8 + index) * 0.3,
+              step.position[2] + Math.sin(time + index) * 0.3
+            ]} 
+            scale={index === currentStep ? 0.2 : 0.1}
           >
-            <meshStandardMaterial color="#f72585" emissive="#f72585" emissiveIntensity={0.5} />
-          </Box>
-        ))}
-      </group>
+            <meshStandardMaterial 
+              color={step.color}
+              emissive={step.color}
+              emissiveIntensity={index === currentStep ? 0.6 : 0.2}
+            />
+          </Sphere>
+          
+          {/* Connection lines to main device */}
+          {index === currentStep && (
+            <line>
+              <bufferGeometry>
+                <bufferAttribute
+                  attach="attributes-position"
+                  count={2}
+                  array={new Float32Array([
+                    step.position[0], step.position[1], step.position[2],
+                    currentStepData.position[0], currentStepData.position[1], currentStepData.position[2]
+                  ])}
+                  itemSize={3}
+                />
+              </bufferGeometry>
+              <lineBasicMaterial color={step.color} transparent opacity={0.5} />
+            </line>
+          )}
+        </group>
+      ))}
 
-      {/* Step Labels */}
+      {/* Floating step indicator */}
       <Text
-        position={[0, 4, 0]}
-        fontSize={0.8}
-        color="#1e293b"
+        position={[currentStepData.position[0], currentStepData.position[1] + 2, currentStepData.position[2]]}
+        fontSize={0.5}
+        color="#ffffff"
         anchorX="center"
         anchorY="middle"
       >
-        Step {currentStep + 1}
+        {currentStepData.title}
       </Text>
+      
+      <Text
+        position={[currentStepData.position[0], currentStepData.position[1] + 1.5, currentStepData.position[2]]}
+        fontSize={0.3}
+        color="#94a3b8"
+        anchorX="center"
+        anchorY="middle"
+      >
+        {currentStepData.description}
+      </Text>
+
+      {/* Progress Ring */}
+      <mesh
+        position={[0, -1, 0]}
+        rotation={[Math.PI / 2, 0, time * 0.2]}
+      >
+        <ringGeometry args={[4, 4.2, 64]} />
+        <meshBasicMaterial 
+          color="#3b82f6" 
+          transparent 
+          opacity={0.3}
+        />
+      </mesh>
+
+      {/* Website flow visualization */}
+      {currentStep > 0 && (
+        <group>
+          {Array.from({ length: currentStep }).map((_, i) => (
+            <Sphere
+              key={`completed-${i}`}
+              position={[
+                Math.cos((i / tourSteps.length) * Math.PI * 2) * 3,
+                0,
+                Math.sin((i / tourSteps.length) * Math.PI * 2) * 3
+              ]}
+              scale={0.15}
+            >
+              <meshStandardMaterial color="#22c55e" emissive="#22c55e" emissiveIntensity={0.3} />
+            </Sphere>
+          ))}
+        </group>
+      )}
     </group>
   );
 };

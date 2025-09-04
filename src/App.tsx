@@ -13,6 +13,9 @@ import Contact from "./pages/Contact";
 import Features from "./pages/Features";
 import NotFound from "./pages/NotFound";
 import TutorialPage from "./pages/TutorialPage";
+import PerformanceReportsPage from "./pages/features/PerformanceReportsPage";
+import MultiTimezonePage from "./pages/features/MultiTimezonePage";
+import BulkSchedulingPage from "./pages/features/BulkSchedulingPage";
 import Chatbot from "./components/ui/chatbot";
 
 const queryClient = new QueryClient();
@@ -32,6 +35,9 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/tutorial" element={<TutorialPage />} />
+            <Route path="/features/performance-reports" element={<PerformanceReportsPage />} />
+            <Route path="/features/multi-timezone" element={<MultiTimezonePage />} />
+            <Route path="/features/bulk-scheduling" element={<BulkSchedulingPage />} />
             <Route path="/features/*" element={<Features />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
