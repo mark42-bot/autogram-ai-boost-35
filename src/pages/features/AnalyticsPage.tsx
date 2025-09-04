@@ -109,23 +109,6 @@ const AnalyticsPage = () => {
               </CardContent>
             </Card>
           </Link>
-            <CardContent className="p-8 text-center">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-300 ${
-                activeMetric === feature.id ? 'gradient-primary animate-pulse-glow' : 'bg-muted'
-              }`}>
-                <feature.icon className={`w-8 h-8 transition-colors duration-300 ${
-                  activeMetric === feature.id ? 'text-white' : 'text-muted-foreground'
-                }`} />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-              {activeMetric === feature.id && (
-                <Badge className="mt-4 gradient-primary">
-                  View Demo Below
-                </Badge>
-              )}
-            </CardContent>
-          </Card>
         ))}
       </div>
 
