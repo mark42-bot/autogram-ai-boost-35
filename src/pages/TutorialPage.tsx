@@ -22,10 +22,12 @@ import {
   Clock
 } from 'lucide-react';
 
-// Interactive 3D Website Tour Model
-const TutorialModel = ({ currentStep }: { currentStep: number }) => {
-  const mainDeviceRef = useRef<any>();
+// Interactive Human Guide for Website Tour
+const HumanGuideModel = ({ currentStep, isPlaying }: { currentStep: number; isPlaying: boolean }) => {
+  const guideRef = useRef<any>();
   const [time, setTime] = useState(0);
+  const [isWaving, setIsWaving] = useState(false);
+  const [speechBubbleVisible, setSpeechBubbleVisible] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -34,188 +36,284 @@ const TutorialModel = ({ currentStep }: { currentStep: number }) => {
     return () => clearInterval(timer);
   }, []);
 
-  // Website sections that the tour covers
+  useEffect(() => {
+    // Show speech bubble when step changes
+    setSpeechBubbleVisible(true);
+    setIsWaving(true);
+    
+    const waveTimer = setTimeout(() => setIsWaving(false), 1000);
+    const bubbleTimer = setTimeout(() => setSpeechBubbleVisible(false), 4000);
+    
+    return () => {
+      clearTimeout(waveTimer);
+      clearTimeout(bubbleTimer);
+    };
+  }, [currentStep]);
+
   const tourSteps = [
     { 
       position: [0, 0, 0], 
       color: '#3b82f6', 
-      scale: 1.2,
-      title: "Dashboard",
-      description: "Main control center"
+      title: "Welcome! I'm Alex, your AI guide",
+      speech: "Hi there! Ready to explore your AI social media assistant?",
+      gesture: "wave"
     },
     { 
-      position: [-3, 0.5, 0], 
+      position: [-2, 0, 1], 
       color: '#8b5cf6', 
-      scale: 1,
-      title: "Upload Content",
-      description: "Start your workflow"
+      title: "Upload Your Content",
+      speech: "First, let's upload some amazing content to work with!",
+      gesture: "point-left"
     },
     { 
-      position: [3, 0.5, 0], 
+      position: [2, 0, 1], 
       color: '#06d6a0', 
-      scale: 1.1,
-      title: "AI Generation",
-      description: "Smart captions & hashtags"
+      title: "AI Magic Happens",
+      speech: "Watch as AI creates perfect captions and hashtags!",
+      gesture: "point-right"
     },
     { 
-      position: [0, 2, 1], 
+      position: [0, 1.5, 0], 
       color: '#f72585', 
-      scale: 0.9,
-      title: "Schedule Posts",
-      description: "Optimal timing"
+      title: "Perfect Timing",
+      speech: "Schedule posts when your audience is most active!",
+      gesture: "point-up"
     },
     { 
-      position: [-2, -1, 1], 
+      position: [-1.5, -0.5, 0], 
       color: '#ffbe0b', 
-      scale: 1,
-      title: "Analytics",
-      description: "Performance insights"
+      title: "Track Performance",
+      speech: "See how your content performs with detailed analytics!",
+      gesture: "point-down"
     },
     { 
-      position: [2, -1, -1], 
+      position: [1.5, -0.5, 0], 
       color: '#ff6b6b', 
-      scale: 1.1,
-      title: "Team Workflow",
-      description: "Collaboration tools"
+      title: "Team Collaboration",
+      speech: "Work seamlessly with your team on every campaign!",
+      gesture: "celebrate"
     },
     { 
-      position: [0, 1.5, -2], 
+      position: [0, 0.5, -1], 
       color: '#4ecdc4', 
-      scale: 1,
-      title: "Automation",
-      description: "Smart workflows"
+      title: "Automate Everything",
+      speech: "Set up smart workflows that run on autopilot!",
+      gesture: "magic"
     },
     { 
       position: [0, 0, 0], 
       color: '#45b7d1', 
-      scale: 1.3,
-      title: "Launch Success",
-      description: "Your first campaign"
+      title: "You're Ready!",
+      speech: "Congratulations! You're now a social media pro!",
+      gesture: "celebrate"
     }
   ];
 
   const currentStepData = tourSteps[currentStep] || tourSteps[0];
 
-  return (
-    <group>
-      {/* Main Platform representing website interface */}
-      <Plane 
-        args={[10, 8]} 
-        position={[0, -2, 0]} 
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <meshStandardMaterial 
-          color="#1e293b" 
-          transparent 
-          opacity={0.1}
-          wireframe={true}
-        />
-      </Plane>
-
-      {/* Central main device (represents current page/feature) */}
+  // Human character (stylized representation)
+  const HumanCharacter = () => (
+    <group 
+      ref={guideRef}
+      position={[-3, 0, 2]}
+      rotation={[0, Math.PI / 4, 0]}
+    >
+      {/* Head */}
+      <Sphere position={[0, 1.7, 0]} scale={[0.4, 0.4, 0.4]}>
+        <meshStandardMaterial color="#FFDBAC" />
+      </Sphere>
+      
+      {/* Eyes */}
+      <Sphere position={[-0.1, 1.8, 0.3]} scale={[0.05, 0.05, 0.05]}>
+        <meshStandardMaterial color="#000000" />
+      </Sphere>
+      <Sphere position={[0.1, 1.8, 0.3]} scale={[0.05, 0.05, 0.05]}>
+        <meshStandardMaterial color="#000000" />
+      </Sphere>
+      
+      {/* Body */}
+      <Box position={[0, 1, 0]} scale={[0.6, 0.8, 0.3]}>
+        <meshStandardMaterial color="#4f46e5" />
+      </Box>
+      
+      {/* Arms */}
       <Box 
-        ref={mainDeviceRef}
-        position={currentStepData.position as [number, number, number]} 
-        scale={currentStepData.scale}
+        position={[-0.5, 1.2, 0]} 
+        scale={[0.15, 0.6, 0.15]}
+        rotation={[0, 0, isWaving ? Math.sin(time * 8) * 0.5 - 0.3 : -0.2]}
+      >
+        <meshStandardMaterial color="#FFDBAC" />
+      </Box>
+      <Box 
+        position={[0.5, 1.2, 0]} 
+        scale={[0.15, 0.6, 0.15]}
+        rotation={[0, 0, currentStepData.gesture === 'point-right' ? -0.8 : 0.2]}
+      >
+        <meshStandardMaterial color="#FFDBAC" />
+      </Box>
+      
+      {/* Legs */}
+      <Box position={[-0.2, 0.3, 0]} scale={[0.15, 0.6, 0.15]}>
+        <meshStandardMaterial color="#1e40af" />
+      </Box>
+      <Box position={[0.2, 0.3, 0]} scale={[0.15, 0.6, 0.15]}>
+        <meshStandardMaterial color="#1e40af" />
+      </Box>
+    </group>
+  );
+
+  // Interactive Feature Displays
+  const FeatureDisplay = ({ step, index }: { step: any; index: number }) => (
+    <group position={step.position as [number, number, number]}>
+      {/* Feature Icon */}
+      <Box 
+        scale={index === currentStep ? [0.8, 0.8, 0.8] : [0.5, 0.5, 0.5]}
         rotation={[
-          Math.sin(time * 0.5) * 0.1, 
-          time * 0.3, 
-          Math.cos(time * 0.3) * 0.05
+          Math.sin(time + index) * 0.1,
+          time * 0.3 + index,
+          Math.cos(time + index) * 0.1
         ]}
       >
         <meshStandardMaterial 
-          color={currentStepData.color}
-          emissive={currentStepData.color}
-          emissiveIntensity={0.2}
+          color={step.color}
+          emissive={step.color}
+          emissiveIntensity={index === currentStep ? 0.4 : 0.2}
         />
       </Box>
-
-      {/* Interactive UI Elements floating around */}
-      {tourSteps.map((step, index) => (
-        <group key={index}>
-          <Sphere 
-            position={[
-              step.position[0] + Math.cos(time + index) * 0.5,
-              step.position[1] + Math.sin(time * 0.8 + index) * 0.3,
-              step.position[2] + Math.sin(time + index) * 0.3
-            ]} 
-            scale={index === currentStep ? 0.2 : 0.1}
-          >
-            <meshStandardMaterial 
-              color={step.color}
-              emissive={step.color}
-              emissiveIntensity={index === currentStep ? 0.6 : 0.2}
-            />
-          </Sphere>
-          
-          {/* Connection lines to main device */}
-          {index === currentStep && (
-            <mesh>
-              <cylinderGeometry args={[0.02, 0.02, 
-                Math.sqrt(
-                  Math.pow(currentStepData.position[0] - step.position[0], 2) +
-                  Math.pow(currentStepData.position[1] - step.position[1], 2) +
-                  Math.pow(currentStepData.position[2] - step.position[2], 2)
-                ), 8
-              ]} />
-              <meshBasicMaterial color={step.color} transparent opacity={0.5} />
-            </mesh>
-          )}
-        </group>
-      ))}
-
-      {/* Floating step indicator */}
-      <Text
-        position={[currentStepData.position[0], currentStepData.position[1] + 2, currentStepData.position[2]]}
-        fontSize={0.5}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {currentStepData.title}
-      </Text>
       
-      <Text
-        position={[currentStepData.position[0], currentStepData.position[1] + 1.5, currentStepData.position[2]]}
-        fontSize={0.3}
-        color="#94a3b8"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {currentStepData.description}
-      </Text>
-
-      {/* Progress Ring */}
-      <mesh
-        position={[0, -1, 0]}
-        rotation={[Math.PI / 2, 0, time * 0.2]}
-      >
-        <ringGeometry args={[4, 4.2, 64]} />
-        <meshBasicMaterial 
-          color="#3b82f6" 
-          transparent 
-          opacity={0.3}
-        />
-      </mesh>
-
-      {/* Website flow visualization */}
-      {currentStep > 0 && (
+      {/* Interactive Particles */}
+      {index === currentStep && (
         <group>
-          {Array.from({ length: currentStep }).map((_, i) => (
+          {Array.from({ length: 8 }).map((_, i) => (
             <Sphere
-              key={`completed-${i}`}
+              key={i}
               position={[
-                Math.cos((i / tourSteps.length) * Math.PI * 2) * 3,
-                0,
-                Math.sin((i / tourSteps.length) * Math.PI * 2) * 3
+                Math.cos((time + i) * 2) * 1.5,
+                Math.sin((time + i) * 1.5) * 0.5,
+                Math.sin((time + i) * 2) * 1.5
               ]}
-              scale={0.15}
+              scale={0.05}
             >
-              <meshStandardMaterial color="#22c55e" emissive="#22c55e" emissiveIntensity={0.3} />
+              <meshStandardMaterial 
+                color={step.color} 
+                emissive={step.color}
+                emissiveIntensity={0.8}
+              />
             </Sphere>
           ))}
         </group>
       )}
+      
+      {/* Connection beam to guide */}
+      {index === currentStep && (
+        <mesh>
+          <cylinderGeometry args={[0.02, 0.02, 
+            Math.sqrt(
+              Math.pow(-3 - step.position[0], 2) +
+              Math.pow(1.2 - step.position[1], 2) +
+              Math.pow(2 - step.position[2], 2)
+            ), 8
+          ]} />
+          <meshBasicMaterial 
+            color={step.color} 
+            transparent 
+            opacity={0.6}
+          />
+        </mesh>
+      )}
+    </group>
+  );
+
+  // Speech Bubble
+  const SpeechBubble = () => (
+    speechBubbleVisible && (
+      <group position={[-1.5, 2.5, 2]}>
+        {/* Bubble */}
+        <Sphere scale={[1.2, 0.6, 0.1]}>
+          <meshStandardMaterial 
+            color="#ffffff"
+            transparent
+            opacity={0.9}
+          />
+        </Sphere>
+        
+        {/* Speech text */}
+        <Text
+          position={[0, 0, 0.2]}
+          fontSize={0.12}
+          color="#333333"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={2}
+        >
+          {currentStepData.speech}
+        </Text>
+        
+        {/* Bubble tail */}
+        <mesh position={[-0.3, -0.3, 0]}>
+          <coneGeometry args={[0.1, 0.2, 3]} />
+          <meshStandardMaterial color="#ffffff" />
+        </mesh>
+      </group>
+    )
+  );
+
+  return (
+    <group>
+      {/* Interactive Platform */}
+      <Plane 
+        args={[12, 10]} 
+        position={[0, -1, 0]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <meshStandardMaterial 
+          color="#0f172a" 
+          transparent 
+          opacity={0.1}
+        />
+      </Plane>
+      
+      {/* Grid Effect */}
+      {Array.from({ length: 10 }).map((_, i) => (
+        <mesh key={`grid-${i}`} position={[-5 + i, -0.9, 0]}>
+          <planeGeometry args={[0.05, 10]} />
+          <meshBasicMaterial 
+            color="#1e293b" 
+            transparent 
+            opacity={0.3}
+          />
+        </mesh>
+      ))}
+
+      <HumanCharacter />
+      <SpeechBubble />
+      
+      {/* Feature Displays */}
+      {tourSteps.map((step, index) => (
+        <FeatureDisplay key={index} step={step} index={index} />
+      ))}
+      
+      {/* Progress Indicator */}
+      <group position={[0, -0.5, 0]}>
+        <Text
+          fontSize={0.3}
+          color="#64748b"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {currentStepData.title}
+        </Text>
+      </group>
+      
+      {/* Ambient Effect */}
+      <mesh position={[0, 0, 0]} rotation={[0, time * 0.1, 0]}>
+        <ringGeometry args={[5, 5.5, 64]} />
+        <meshBasicMaterial 
+          color={currentStepData.color}
+          transparent 
+          opacity={0.1}
+        />
+      </mesh>
     </group>
   );
 };
@@ -227,60 +325,68 @@ const TutorialPage = () => {
 
   const tutorialSteps = [
     {
-      title: "Welcome to Your AI Social Media Assistant",
-      description: "Let's take a quick tour of how to create, optimize, and schedule your Instagram content with AI power.",
+      title: "Welcome! Meet Alex, Your AI Guide",
+      description: "Hi there! I'm Alex, your personal AI assistant. I'll walk you through every feature and help you become a social media pro!",
       icon: <Smartphone className="w-6 h-6" />,
-      actions: ["Open the dashboard", "Explore the main features", "Get familiar with the interface"],
-      duration: "2 min"
+      actions: ["👋 Meet your AI guide Alex", "🎯 Understand the tour structure", "🚀 Get ready for an amazing journey"],
+      duration: "2 min",
+      guideAction: "Alex waves hello and introduces the platform"
     },
     {
-      title: "Upload Your Content",
-      description: "Start by uploading your images or videos. Our AI will analyze your content to suggest the best captions and hashtags.",
+      title: "Upload Your Amazing Content",
+      description: "Let's start by uploading your photos or videos. Watch as Alex shows you how our AI instantly analyzes everything!",
       icon: <Upload className="w-6 h-6" />,
-      actions: ["Click 'Upload Content'", "Select your image/video", "Wait for AI analysis", "Review content insights"],
-      duration: "3 min"
+      actions: ["📸 Click 'Upload Content'", "⚡ Watch AI analysis in action", "🎨 See content insights appear", "✨ Get ready for magic!"],
+      duration: "3 min",
+      guideAction: "Alex points to upload area and demonstrates the process"
     },
     {
-      title: "Generate AI Captions",
-      description: "Our AI creates engaging captions tailored to your brand voice and audience. Choose from multiple options or customize them.",
+      title: "AI Caption Magic Happens Here",
+      description: "This is where the real magic happens! Alex will show you how AI creates perfect captions that sound just like you.",
       icon: <Zap className="w-6 h-6" />,
-      actions: ["Navigate to AI Caption Generator", "Select your content type", "Choose caption style", "Review and edit suggestions"],
-      duration: "4 min"
+      actions: ["🤖 Watch AI generate captions", "🎯 Choose your brand voice", "✏️ Customize and refine", "💫 See the perfect results"],
+      duration: "4 min",
+      guideAction: "Alex demonstrates AI caption generation with enthusiasm"
     },
     {
       title: "Smart Hashtag Research",
-      description: "Get data-driven hashtag recommendations based on trending topics and your niche. Maximize your content reach.",
+      description: "Alex reveals the secret to viral content: data-driven hashtags! Learn how to maximize your reach with trending tags.",
       icon: <BarChart3 className="w-6 h-6" />,
-      actions: ["Open Smart Hashtag tool", "Enter your content topic", "Review hashtag performance data", "Copy optimized hashtag sets"],
-      duration: "3 min"
+      actions: ["📊 Explore hashtag analytics", "🔥 Find trending topics", "📈 Check performance data", "💯 Copy optimized sets"],
+      duration: "3 min",
+      guideAction: "Alex points to trending hashtags and explains their power"
     },
     {
-      title: "Optimize Posting Times",
-      description: "Use AI analytics to find when your audience is most active. Schedule posts for maximum engagement.",
+      title: "Perfect Timing Secrets",
+      description: "Alex shares the insider secret: when to post for maximum engagement! Your audience activity patterns revealed.",
       icon: <Calendar className="w-6 h-6" />,
-      actions: ["Check audience activity patterns", "Select optimal posting time", "Set up recurring schedules", "Monitor performance"],
-      duration: "5 min"
+      actions: ["🕐 Discover peak activity times", "⏰ Set smart schedules", "🔄 Create recurring posts", "📈 Watch engagement soar"],
+      duration: "5 min",
+      guideAction: "Alex shows optimal posting times with excitement"
     },
     {
-      title: "Monitor Performance",
-      description: "Track your content performance with real-time analytics. Get insights on engagement, reach, and audience behavior.",
+      title: "Track Your Success",
+      description: "Alex guides you through the analytics dashboard where you'll see your content's performance and audience insights.",
       icon: <Users className="w-6 h-6" />,
-      actions: ["Access Analytics dashboard", "Review engagement metrics", "Analyze audience insights", "Export performance reports"],
-      duration: "4 min"
+      actions: ["📊 Explore your dashboard", "💰 Track engagement ROI", "👥 Understand your audience", "📑 Export detailed reports"],
+      duration: "4 min",
+      guideAction: "Alex celebrates your growing metrics and success"
     },
     {
-      title: "Set Up Automation",
-      description: "Configure automated workflows for content approval, scheduling, and team collaboration. Save time and stay consistent.",
+      title: "Automation Made Simple",
+      description: "Alex shows you how to set up smart workflows that work while you sleep. Automation has never been this easy!",
       icon: <Settings className="w-6 h-6" />,
-      actions: ["Configure workflow settings", "Set approval processes", "Enable auto-scheduling", "Test automation rules"],
-      duration: "6 min"
+      actions: ["⚙️ Configure smart workflows", "✅ Set approval processes", "🤖 Enable auto-scheduling", "🧪 Test automation magic"],
+      duration: "6 min",
+      guideAction: "Alex demonstrates automated workflows with amazement"
     },
     {
-      title: "Launch Your First Campaign",
-      description: "Put it all together! Create your first optimized post with AI captions, smart hashtags, and perfect timing.",
+      title: "You're Now a Social Media Pro!",
+      description: "Congratulations! Alex is so proud of you. You've mastered everything and you're ready to create viral content!",
       icon: <CheckCircle className="w-6 h-6" />,
-      actions: ["Combine all tools", "Review final post", "Schedule or publish", "Monitor initial performance"],
-      duration: "5 min"
+      actions: ["🎉 Celebrate your achievement", "🚀 Launch your first campaign", "✨ Create viral content", "💪 Dominate social media"],
+      duration: "5 min",
+      guideAction: "Alex celebrates your success with confetti and cheers"
     }
   ];
 
@@ -350,8 +456,8 @@ const TutorialPage = () => {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <MousePointer className="w-5 h-5 text-primary" />
-                  Interactive 3D Guide
+                  <Users className="w-5 h-5 text-primary" />
+                  Meet Alex - Your AI Guide
                 </span>
                 <div className="flex gap-2">
                   <Button
@@ -397,7 +503,7 @@ const TutorialPage = () => {
                   <ambientLight intensity={0.5} />
                   <directionalLight position={[10, 10, 5]} intensity={1} />
                   <pointLight position={[-10, -10, -5]} intensity={0.5} />
-                  <TutorialModel currentStep={currentStep} />
+                  <HumanGuideModel currentStep={currentStep} isPlaying={isPlaying} />
                   <OrbitControls 
                     enablePan={true} 
                     enableZoom={true} 
@@ -475,16 +581,24 @@ const TutorialPage = () => {
                 </p>
                 
                 <div>
-                  <h4 className="font-semibold mb-3">What you'll learn:</h4>
-                  <div className="space-y-2">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <span>🎯 What Alex will show you:</span>
+                  </h4>
+                  <div className="space-y-3">
                     {tutorialSteps[currentStep].actions.map((action, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <div className="w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-sm font-medium">
+                      <div key={index} className="flex items-center gap-3 p-2 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors">
+                        <div className="w-8 h-8 gradient-primary rounded-full flex items-center justify-center text-white text-sm font-bold animate-pulse">
                           {index + 1}
                         </div>
-                        <span className="text-sm">{action}</span>
+                        <span className="text-sm font-medium">{action}</span>
                       </div>
                     ))}
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg">
+                    <p className="text-sm text-muted-foreground italic">
+                      💡 <strong>Alex says:</strong> "{tutorialSteps[currentStep].guideAction}"
+                    </p>
                   </div>
                 </div>
 
@@ -507,20 +621,32 @@ const TutorialPage = () => {
               </CardContent>
             </Card>
 
-            {/* Quick Tips */}
-            <Card className="glass border-border/20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+            {/* Interactive Tips from Alex */}
+            <Card className="glass border-border/20 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 border-green-200 dark:border-green-800">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-primary" />
-                  Pro Tips
+                  <Users className="w-5 h-5 text-green-600" />
+                  🤖 Alex's Pro Tips
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 text-sm">
-                  <p>• Use the 3D model controls to explore different angles</p>
-                  <p>• Click the auto-play button for hands-free learning</p>
-                  <p>• Each step builds on the previous one - don't skip ahead</p>
-                  <p>• Practice each feature in the actual app after learning</p>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">👋</span>
+                    <p><strong>Interact with me:</strong> Rotate the 3D scene to see me from different angles!</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">⚡</span>
+                    <p><strong>Auto-play mode:</strong> Let me guide you through everything automatically!</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">🎯</span>
+                    <p><strong>Follow along:</strong> I'll point to each feature as we explore together!</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">🚀</span>
+                    <p><strong>Practice time:</strong> Try each feature in the real app after our tour!</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
