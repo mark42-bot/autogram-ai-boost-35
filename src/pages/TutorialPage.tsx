@@ -150,20 +150,16 @@ const TutorialModel = ({ currentStep }: { currentStep: number }) => {
           
           {/* Connection lines to main device */}
           {index === currentStep && (
-            <line>
-              <bufferGeometry>
-                <bufferAttribute
-                  attach="attributes-position"
-                  count={2}
-                  array={new Float32Array([
-                    step.position[0], step.position[1], step.position[2],
-                    currentStepData.position[0], currentStepData.position[1], currentStepData.position[2]
-                  ])}
-                  itemSize={3}
-                />
-              </bufferGeometry>
-              <lineBasicMaterial color={step.color} transparent opacity={0.5} />
-            </line>
+            <mesh>
+              <cylinderGeometry args={[0.02, 0.02, 
+                Math.sqrt(
+                  Math.pow(currentStepData.position[0] - step.position[0], 2) +
+                  Math.pow(currentStepData.position[1] - step.position[1], 2) +
+                  Math.pow(currentStepData.position[2] - step.position[2], 2)
+                ), 8
+              ]} />
+              <meshBasicMaterial color={step.color} transparent opacity={0.5} />
+            </mesh>
           )}
         </group>
       ))}
