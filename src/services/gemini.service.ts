@@ -14,7 +14,7 @@ export class GeminiService {
 
   async generateCaptions(prompt: string, count: number = 6): Promise<string[]> {
     try {
-      const enhancedPrompt = `Generate ${count} engaging Instagram captions for: "${prompt}". 
+      const enhancedPrompt = `Generate exactly ${count} engaging Instagram captions for: "${prompt}". 
       Each caption should be:
       - Between 150-200 characters
       - Include relevant emojis
@@ -22,18 +22,26 @@ export class GeminiService {
       - Include a call-to-action or question
       - Be unique and creative
       
-      Format as a JSON array of strings only, no additional text.`;
+      Return ONLY a simple array of strings, no JSON formatting, no markdown, no extra text.
+      Example format:
+      ["Caption 1 here ✨", "Caption 2 here 🌟", "Caption 3 here 💫"]`;
 
       const result = await this.model.generateContent(enhancedPrompt);
       const response = await result.response;
-      const text = response.text();
+      let text = response.text().trim();
+      
+      // Clean up any markdown formatting
+      text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').replace(/^\s*[\[\{]/, '[').replace(/[\]\}]\s*$/, ']');
       
       try {
         const captions = JSON.parse(text);
-        return Array.isArray(captions) ? captions : [text];
+        return Array.isArray(captions) ? captions.slice(0, count) : [text];
       } catch {
-        // Fallback if JSON parsing fails
-        return text.split('\n').filter(line => line.trim()).slice(0, count);
+        // Enhanced fallback parsing
+        const lines = text.split(/\n|,/).map(line => 
+          line.replace(/^[\s\d\.\-\*"'\[\]]+/, '').replace(/["'\[\]]+$/, '').trim()
+        ).filter(line => line.length > 20);
+        return lines.slice(0, count).length > 0 ? lines.slice(0, count) : this.getFallbackCaptions(count);
       }
     } catch (error) {
       console.error('Error generating captions:', error);
@@ -46,25 +54,34 @@ export class GeminiService {
       const hashtagSets: string[][] = [];
       
       for (let i = 0; i < count; i++) {
-        const enhancedPrompt = `Generate 20 relevant Instagram hashtags for: "${prompt}". 
+        const enhancedPrompt = `Generate exactly 20 relevant Instagram hashtags for: "${prompt}". 
         Include a mix of:
         - Popular trending hashtags (high reach)
         - Niche-specific hashtags (targeted audience)
         - Branded/community hashtags
         - Location-based hashtags if relevant
         
-        Format as a JSON array of hashtag strings (include # symbol).`;
+        Return ONLY a simple array of hashtag strings with # symbol, no JSON formatting, no extra text.
+        Example format:
+        ["#hashtag1", "#hashtag2", "#hashtag3"]`;
 
         const result = await this.model.generateContent(enhancedPrompt);
         const response = await result.response;
-        const text = response.text();
+        let text = response.text().trim();
+        
+        // Clean up formatting
+        text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').replace(/^\s*[\[\{]/, '[').replace(/[\]\}]\s*$/, ']');
         
         try {
           const hashtags = JSON.parse(text);
-          hashtagSets.push(Array.isArray(hashtags) ? hashtags : text.split(' ').filter(h => h.startsWith('#')));
+          hashtagSets.push(Array.isArray(hashtags) ? hashtags.slice(0, 20) : text.split(' ').filter(h => h.startsWith('#')).slice(0, 20));
         } catch {
-          // Fallback parsing
-          const hashtags = text.split(/[\s,\n]+/).filter(h => h.includes('#')).slice(0, 20);
+          // Enhanced fallback parsing
+          const hashtags = text.split(/[\s,\n]+/)
+            .map(h => h.trim())
+            .filter(h => h.includes('#'))
+            .map(h => h.startsWith('#') ? h : '#' + h.replace(/[^\w]/g, ''))
+            .slice(0, 20);
           hashtagSets.push(hashtags.length > 0 ? hashtags : this.getFallbackHashtags()[0]);
         }
       }
@@ -76,9 +93,62 @@ export class GeminiService {
     }
   }
 
+  async generateImages(prompt: string, count: number = 6): Promise<string[]> {
+    // For now, return curated images based on prompt keywords
+    const imageCategories = {
+      coffee: [
+        "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1521302200778-33500795e128?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+      ],
+      travel: [
+        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=400&fit=crop"
+      ],
+      food: [
+        "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1563379091339-03246963d96c?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1565299507177-b0ac66763ed1?w=400&h=400&fit=crop"
+      ],
+      fitness: [
+        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop"
+      ]
+    };
+
+    const lowerPrompt = prompt.toLowerCase();
+    let selectedImages = imageCategories.travel; // default
+
+    if (lowerPrompt.includes('coffee') || lowerPrompt.includes('cafe') || lowerPrompt.includes('morning')) {
+      selectedImages = imageCategories.coffee;
+    } else if (lowerPrompt.includes('food') || lowerPrompt.includes('recipe') || lowerPrompt.includes('cooking')) {
+      selectedImages = imageCategories.food;
+    } else if (lowerPrompt.includes('fitness') || lowerPrompt.includes('workout') || lowerPrompt.includes('gym')) {
+      selectedImages = imageCategories.fitness;
+    } else if (lowerPrompt.includes('travel') || lowerPrompt.includes('adventure') || lowerPrompt.includes('explore')) {
+      selectedImages = imageCategories.travel;
+    }
+
+    return selectedImages.slice(0, count);
+  }
+
   async generateContentIdeas(prompt: string, count: number = 6): Promise<string[]> {
     try {
-      const enhancedPrompt = `Generate ${count} creative content ideas for: "${prompt}". 
+      const enhancedPrompt = `Generate exactly ${count} creative content ideas for: "${prompt}". 
       Each idea should be:
       - Specific and actionable
       - Include content format (photo, video, carousel, story)
@@ -86,18 +156,26 @@ export class GeminiService {
       - Target audience-appropriate
       - Include specific tips or angles
       
-      Format as a JSON array of detailed idea strings.`;
+      Return ONLY a simple array of detailed idea strings, no JSON formatting, no extra text.
+      Example format:
+      ["Idea 1 with specific details", "Idea 2 with format suggestions", "Idea 3 with engagement tips"]`;
 
       const result = await this.model.generateContent(enhancedPrompt);
       const response = await result.response;
-      const text = response.text();
+      let text = response.text().trim();
+      
+      // Clean up formatting
+      text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').replace(/^\s*[\[\{]/, '[').replace(/[\]\}]\s*$/, ']');
       
       try {
         const ideas = JSON.parse(text);
-        return Array.isArray(ideas) ? ideas : [text];
+        return Array.isArray(ideas) ? ideas.slice(0, count) : [text];
       } catch {
-        // Fallback if JSON parsing fails
-        return text.split('\n').filter(line => line.trim()).slice(0, count);
+        // Enhanced fallback parsing
+        const lines = text.split(/\n|,/).map(line => 
+          line.replace(/^[\s\d\.\-\*"'\[\]]+/, '').replace(/["'\[\]]+$/, '').trim()
+        ).filter(line => line.length > 30);
+        return lines.slice(0, count).length > 0 ? lines.slice(0, count) : this.getFallbackContentIdeas(count);
       }
     } catch (error) {
       console.error('Error generating content ideas:', error);

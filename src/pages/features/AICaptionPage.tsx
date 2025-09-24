@@ -24,6 +24,7 @@ const AICaptionPage = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [inputText, setInputText] = useState('Coffee shop morning vibes');
   const [generatedCaptions, setGeneratedCaptions] = useState<string[]>([]);
+  const [postImages, setPostImages] = useState<string[]>([]);
 
   const instagramPosts = [
     {
@@ -86,7 +87,14 @@ const AICaptionPage = () => {
     try {
       // Import Gemini service dynamically
       const { geminiService } = await import('@/services/gemini.service');
-      const aiCaptions = await geminiService.generateCaptions(inputText, 6);
+      
+      // Generate images and captions
+      const [aiCaptions, images] = await Promise.all([
+        geminiService.generateCaptions(inputText, 6),
+        geminiService.generateImages(inputText, 6)
+      ]);
+      
+      setPostImages(images);
       
       // Display captions one by one for visual effect
       for (let i = 0; i < aiCaptions.length; i++) {
@@ -205,7 +213,7 @@ const AICaptionPage = () => {
               {/* Image */}
               <div className="aspect-square overflow-hidden">
                 <img 
-                  src={post.image} 
+                  src={postImages[index] || post.image} 
                   alt="Instagram post" 
                   className="w-full h-full object-cover"
                 />

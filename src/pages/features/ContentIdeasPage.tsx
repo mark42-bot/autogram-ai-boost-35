@@ -27,6 +27,7 @@ const ContentIdeasPage = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [inputText, setInputText] = useState('Travel photography lifestyle');
   const [generatedIdeas, setGeneratedIdeas] = useState<string[]>([]);
+  const [postImages, setPostImages] = useState<string[]>([]);
 
   const instagramPosts = [
     {
@@ -102,7 +103,14 @@ const ContentIdeasPage = () => {
     try {
       // Import Gemini service dynamically
       const { geminiService } = await import('@/services/gemini.service');
-      const contentIdeas = await geminiService.generateContentIdeas(inputText, 6);
+      
+      // Generate images and content ideas
+      const [contentIdeas, images] = await Promise.all([
+        geminiService.generateContentIdeas(inputText, 6),
+        geminiService.generateImages(inputText, 6)
+      ]);
+      
+      setPostImages(images);
       
       // Display ideas one by one for visual effect
       for (let i = 0; i < contentIdeas.length; i++) {
@@ -252,7 +260,7 @@ const ContentIdeasPage = () => {
               {/* Image */}
               <div className="aspect-square overflow-hidden relative">
                 <img 
-                  src={post.image} 
+                  src={postImages[index] || post.image} 
                   alt="Instagram post" 
                   className="w-full h-full object-cover"
                 />

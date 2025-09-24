@@ -25,6 +25,7 @@ const SmartHashtagPage = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [inputText, setInputText] = useState('Fitness workout motivation');
   const [generatedHashtags, setGeneratedHashtags] = useState<string[][]>([]);
+  const [postImages, setPostImages] = useState<string[]>([]);
 
   const instagramPosts = [
     {
@@ -237,7 +238,7 @@ const SmartHashtagPage = () => {
               {/* Image */}
               <div className="aspect-square overflow-hidden">
                 <img 
-                  src={post.image} 
+                  src={postImages[index] || post.image} 
                   alt="Instagram post" 
                   className="w-full h-full object-cover"
                 />
