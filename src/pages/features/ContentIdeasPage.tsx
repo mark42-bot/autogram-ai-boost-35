@@ -99,11 +99,25 @@ const ContentIdeasPage = () => {
     setCurrentStep(0);
     setGeneratedIdeas([]);
 
-    // Simulate AI thinking process
-    for (let i = 0; i < aiContentIdeas.length; i++) {
-      setCurrentStep(i + 1);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setGeneratedIdeas(prev => [...prev, aiContentIdeas[i]]);
+    try {
+      // Import Gemini service dynamically
+      const { geminiService } = await import('@/services/gemini.service');
+      const contentIdeas = await geminiService.generateContentIdeas(inputText, 6);
+      
+      // Display ideas one by one for visual effect
+      for (let i = 0; i < contentIdeas.length; i++) {
+        setCurrentStep(i + 1);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setGeneratedIdeas(prev => [...prev, contentIdeas[i]]);
+      }
+    } catch (error) {
+      console.error('Failed to generate content ideas:', error);
+      // Fallback to original mock data if API fails
+      for (let i = 0; i < aiContentIdeas.length; i++) {
+        setCurrentStep(i + 1);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setGeneratedIdeas(prev => [...prev, aiContentIdeas[i]]);
+      }
     }
     
     setIsGenerating(false);

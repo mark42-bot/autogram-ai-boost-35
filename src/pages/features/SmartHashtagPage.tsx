@@ -115,11 +115,25 @@ const SmartHashtagPage = () => {
     setCurrentStep(0);
     setGeneratedHashtags([]);
 
-    // Simulate AI thinking process
-    for (let i = 0; i < aiHashtagSets.length; i++) {
-      setCurrentStep(i + 1);
-      await new Promise(resolve => setTimeout(resolve, 1800));
-      setGeneratedHashtags(prev => [...prev, aiHashtagSets[i]]);
+    try {
+      // Import Gemini service dynamically
+      const { geminiService } = await import('@/services/gemini.service');
+      const hashtagSets = await geminiService.generateHashtags(inputText, 6);
+      
+      // Display hashtag sets one by one for visual effect
+      for (let i = 0; i < hashtagSets.length; i++) {
+        setCurrentStep(i + 1);
+        await new Promise(resolve => setTimeout(resolve, 1800));
+        setGeneratedHashtags(prev => [...prev, hashtagSets[i]]);
+      }
+    } catch (error) {
+      console.error('Failed to generate hashtags:', error);
+      // Fallback to original mock data if API fails
+      for (let i = 0; i < aiHashtagSets.length; i++) {
+        setCurrentStep(i + 1);
+        await new Promise(resolve => setTimeout(resolve, 1800));
+        setGeneratedHashtags(prev => [...prev, aiHashtagSets[i]]);
+      }
     }
     
     setIsGenerating(false);

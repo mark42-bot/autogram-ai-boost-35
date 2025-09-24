@@ -83,11 +83,25 @@ const AICaptionPage = () => {
     setCurrentStep(0);
     setGeneratedCaptions([]);
 
-    // Simulate AI thinking process
-    for (let i = 0; i < aiCaptions.length; i++) {
-      setCurrentStep(i + 1);
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setGeneratedCaptions(prev => [...prev, aiCaptions[i]]);
+    try {
+      // Import Gemini service dynamically
+      const { geminiService } = await import('@/services/gemini.service');
+      const aiCaptions = await geminiService.generateCaptions(inputText, 6);
+      
+      // Display captions one by one for visual effect
+      for (let i = 0; i < aiCaptions.length; i++) {
+        setCurrentStep(i + 1);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setGeneratedCaptions(prev => [...prev, aiCaptions[i]]);
+      }
+    } catch (error) {
+      console.error('Failed to generate captions:', error);
+      // Fallback to original mock data if API fails
+      for (let i = 0; i < aiCaptions.length; i++) {
+        setCurrentStep(i + 1);
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setGeneratedCaptions(prev => [...prev, aiCaptions[i]]);
+      }
     }
     
     setIsGenerating(false);

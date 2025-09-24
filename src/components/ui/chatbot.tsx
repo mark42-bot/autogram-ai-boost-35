@@ -36,16 +36,24 @@ const Chatbot = () => {
     help: 'I can assist with: Features overview, Pricing information, Getting started guide, Technical support, and Account management.',
   };
 
-  const getBotResponse = (userMessage: string): string => {
-    const message = userMessage.toLowerCase();
-    
-    for (const [key, response] of Object.entries(predefinedResponses)) {
-      if (message.includes(key)) {
-        return response;
+  const getBotResponse = async (userMessage: string): Promise<string> => {
+    try {
+      // Import Gemini service dynamically
+      const { geminiService } = await import('@/services/gemini.service');
+      return await geminiService.chatResponse(userMessage);
+    } catch (error) {
+      console.error('Failed to get AI response:', error);
+      // Fallback to keyword matching
+      const message = userMessage.toLowerCase();
+      
+      for (const [key, response] of Object.entries(predefinedResponses)) {
+        if (message.includes(key)) {
+          return response;
+        }
       }
+      
+      return 'I understand you\'re asking about AutoGram. Could you please be more specific? I can help with features, pricing, getting started, or technical questions.';
     }
-    
-    return 'I understand you\'re asking about AutoGram. Could you please be more specific? I can help with features, pricing, getting started, or technical questions.';
   };
 
   const handleSendMessage = async () => {
@@ -62,18 +70,30 @@ const Chatbot = () => {
     setInputValue('');
     setIsTyping(true);
 
-    // Simulate AI thinking time
-    setTimeout(() => {
+    // Get AI response
+    try {
+      const botResponseContent = await getBotResponse(inputValue);
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: getBotResponse(inputValue),
+        content: botResponseContent,
         sender: 'bot',
         timestamp: new Date(),
       };
       
       setMessages(prev => [...prev, botResponse]);
       setIsTyping(false);
-    }, 1000);
+    } catch (error) {
+      console.error('Error getting bot response:', error);
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'Sorry, I\'m having trouble responding right now. Please try again or contact our support team.',
+        sender: 'bot',
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+      setIsTyping(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
