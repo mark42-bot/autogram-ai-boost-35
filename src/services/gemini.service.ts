@@ -12,9 +12,9 @@ export class GeminiService {
     this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
   }
 
-  async generateCaptions(prompt: string, count: number = 6): Promise<string[]> {
+  async generateCaptions(prompt: string, count: number = 6, mediaFiles?: File[]): Promise<string[]> {
     try {
-      const enhancedPrompt = `Generate exactly ${count} engaging Instagram captions for: "${prompt}". 
+      let enhancedPrompt = `Generate exactly ${count} engaging Instagram captions for: "${prompt}". 
       Each caption should be:
       - Between 150-200 characters
       - Include relevant emojis
@@ -26,7 +26,25 @@ export class GeminiService {
       Example format:
       ["Caption 1 here ✨", "Caption 2 here 🌟", "Caption 3 here 💫"]`;
 
-      const result = await this.model.generateContent(enhancedPrompt);
+      let result;
+      
+      if (mediaFiles && mediaFiles.length > 0) {
+        // Analyze uploaded media and generate captions based on content
+        const imageData = await this.convertFileToBase64(mediaFiles[0]);
+        enhancedPrompt = `Analyze this image and generate exactly ${count} engaging Instagram captions based on what you see. ${enhancedPrompt}`;
+        
+        result = await this.model.generateContent([
+          enhancedPrompt,
+          {
+            inlineData: {
+              data: imageData.split(',')[1],
+              mimeType: mediaFiles[0].type
+            }
+          }
+        ]);
+      } else {
+        result = await this.model.generateContent(enhancedPrompt);
+      }
       const response = await result.response;
       let text = response.text().trim();
       
@@ -49,12 +67,12 @@ export class GeminiService {
     }
   }
 
-  async generateHashtags(prompt: string, count: number = 6): Promise<string[][]> {
+  async generateHashtags(prompt: string, count: number = 6, mediaFiles?: File[]): Promise<string[][]> {
     try {
       const hashtagSets: string[][] = [];
       
       for (let i = 0; i < count; i++) {
-        const enhancedPrompt = `Generate exactly 20 relevant Instagram hashtags for: "${prompt}". 
+        let enhancedPrompt = `Generate exactly 20 relevant Instagram hashtags for: "${prompt}". 
         Include a mix of:
         - Popular trending hashtags (high reach)
         - Niche-specific hashtags (targeted audience)
@@ -65,7 +83,25 @@ export class GeminiService {
         Example format:
         ["#hashtag1", "#hashtag2", "#hashtag3"]`;
 
-        const result = await this.model.generateContent(enhancedPrompt);
+        let result;
+        
+        if (mediaFiles && mediaFiles.length > 0 && i === 0) {
+          // Only analyze the first uploaded image for hashtag generation
+          const imageData = await this.convertFileToBase64(mediaFiles[0]);
+          enhancedPrompt = `Analyze this image and generate hashtags based on what you see. ${enhancedPrompt}`;
+          
+          result = await this.model.generateContent([
+            enhancedPrompt,
+            {
+              inlineData: {
+                data: imageData.split(',')[1],
+                mimeType: mediaFiles[0].type
+              }
+            }
+          ]);
+        } else {
+          result = await this.model.generateContent(enhancedPrompt);
+        }
         const response = await result.response;
         let text = response.text().trim();
         
@@ -146,9 +182,9 @@ export class GeminiService {
     return selectedImages.slice(0, count);
   }
 
-  async generateContentIdeas(prompt: string, count: number = 6): Promise<string[]> {
+  async generateContentIdeas(prompt: string, count: number = 6, mediaFiles?: File[]): Promise<string[]> {
     try {
-      const enhancedPrompt = `Generate exactly ${count} creative content ideas for: "${prompt}". 
+      let enhancedPrompt = `Generate exactly ${count} creative content ideas for: "${prompt}". 
       Each idea should be:
       - Specific and actionable
       - Include content format (photo, video, carousel, story)
@@ -160,7 +196,25 @@ export class GeminiService {
       Example format:
       ["Idea 1 with specific details", "Idea 2 with format suggestions", "Idea 3 with engagement tips"]`;
 
-      const result = await this.model.generateContent(enhancedPrompt);
+      let result;
+      
+      if (mediaFiles && mediaFiles.length > 0) {
+        // Analyze uploaded media and generate content ideas based on content
+        const imageData = await this.convertFileToBase64(mediaFiles[0]);
+        enhancedPrompt = `Analyze this image and generate content ideas based on what you see. ${enhancedPrompt}`;
+        
+        result = await this.model.generateContent([
+          enhancedPrompt,
+          {
+            inlineData: {
+              data: imageData.split(',')[1],
+              mimeType: mediaFiles[0].type
+            }
+          }
+        ]);
+      } else {
+        result = await this.model.generateContent(enhancedPrompt);
+      }
       const response = await result.response;
       let text = response.text().trim();
       
@@ -239,6 +293,16 @@ export class GeminiService {
       "Post a question sticker story to engage your audience"
     ];
     return fallbacks.slice(0, count);
+  }
+
+  // Helper method to convert File to base64
+  private async convertFileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 }
 

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { InstagramLogin } from '@/components/ui/instagram-login';
 import { 
   ArrowLeft,
   TrendingUp, 
@@ -17,13 +18,18 @@ import {
   PieChart,
   Activity,
   Target,
-  Sparkles
+  Sparkles,
+  Grid3X3,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const PerformanceReportsPage = () => {
   const [currentPost, setCurrentPost] = useState(0);
   const [animationStep, setAnimationStep] = useState(0);
+  const [instagramData, setInstagramData] = useState<any>(null);
+  const [showPostSelector, setShowPostSelector] = useState(false);
   const navigate = useNavigate();
 
   // Sample Instagram posts with performance data
@@ -93,16 +99,22 @@ const PerformanceReportsPage = () => {
   }, []);
 
   const nextPost = () => {
-    setCurrentPost((prev) => (prev + 1) % performancePosts.length);
+    setCurrentPost((prev) => (prev + 1) % availablePosts.length);
     setAnimationStep(0);
   };
 
   const prevPost = () => {
-    setCurrentPost((prev) => (prev - 1 + performancePosts.length) % performancePosts.length);
+    setCurrentPost((prev) => (prev - 1 + availablePosts.length) % availablePosts.length);
     setAnimationStep(0);
   };
 
-  const currentPostData = performancePosts[currentPost];
+  const handleInstagramLogin = (userData: any) => {
+    setInstagramData(userData);
+  };
+
+  const currentPostData = instagramData ? instagramData.recentPosts[currentPost] : performancePosts[currentPost];
+  const isUsingInstagramData = !!instagramData;
+  const availablePosts = instagramData ? instagramData.recentPosts : performancePosts;
 
   return (
     <div className="min-h-screen bg-background py-16 px-4 sm:px-6 lg:px-8">
@@ -137,6 +149,49 @@ const PerformanceReportsPage = () => {
           </p>
         </div>
 
+        {/* Instagram Login */}
+        {!instagramData && (
+          <div className="mb-12">
+            <InstagramLogin onLoginSuccess={handleInstagramLogin} />
+          </div>
+        )}
+
+        {/* Post Selector for Instagram Data */}
+        {instagramData && (
+          <Card className="glass border-border/20 mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Grid3X3 className="w-5 h-5 text-primary" />
+                  Your Instagram Posts
+                </span>
+                <Badge className="gradient-primary">
+                  {availablePosts.length} posts available
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
+                {availablePosts.map((post: any, index: number) => (
+                  <div
+                    key={post.id || index}
+                    className={`aspect-square rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                      currentPost === index ? 'border-primary ring-2 ring-primary/20' : 'border-border/20 hover:border-primary/50'
+                    }`}
+                    onClick={() => setCurrentPost(index)}
+                  >
+                    <img
+                      src={isUsingInstagramData ? post.mediaUrl : post.image}
+                      alt="Instagram post"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Instagram Post Simulation */}
           <Card className="glass border-border/20">
@@ -162,18 +217,22 @@ const PerformanceReportsPage = () => {
                 {/* Post Header */}
                 <div className="flex items-center p-4 border-b">
                   <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    AG
+                    {isUsingInstagramData ? instagramData.username.charAt(0).toUpperCase() : 'AG'}
                   </div>
                   <div className="ml-3">
-                    <div className="font-semibold text-sm">autogram_ai</div>
-                    <div className="text-xs text-gray-500">Sponsored</div>
+                    <div className="font-semibold text-sm">
+                      {isUsingInstagramData ? instagramData.username : 'autogram_ai'}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {isUsingInstagramData ? new Date(currentPostData.timestamp).toLocaleDateString() : 'Sponsored'}
+                    </div>
                   </div>
                 </div>
 
                 {/* Post Image */}
                 <div className="aspect-square relative overflow-hidden">
                   <img 
-                    src={currentPostData.image} 
+                    src={isUsingInstagramData ? currentPostData.mediaUrl : currentPostData.image} 
                     alt="Instagram post" 
                     className="w-full h-full object-cover"
                   />
@@ -183,9 +242,9 @@ const PerformanceReportsPage = () => {
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                       <div className="text-white text-center animate-fade-in">
                         <div className={`text-2xl font-bold mb-2 ${animationStep >= 1 ? 'animate-scale-in' : ''}`}>
-                          {animationStep === 1 && `❤️ ${currentPostData.metrics.likes}`}
-                          {animationStep === 2 && `👀 ${currentPostData.metrics.reach}`}
-                          {animationStep === 3 && `📊 ${currentPostData.metrics.engagement}%`}
+                          {animationStep === 1 && `❤️ ${isUsingInstagramData ? currentPostData.likeCount : currentPostData.metrics.likes}`}
+                          {animationStep === 2 && `👀 ${isUsingInstagramData ? currentPostData.likeCount * 4 : currentPostData.metrics.reach}`}
+                          {animationStep === 3 && `📊 ${isUsingInstagramData ? ((currentPostData.likeCount + currentPostData.commentsCount) / (currentPostData.likeCount * 4) * 100).toFixed(1) : currentPostData.metrics.engagement}%`}
                         </div>
                         <div className="text-sm">
                           {animationStep === 1 && 'Total Likes'}
@@ -206,15 +265,19 @@ const PerformanceReportsPage = () => {
                   </div>
                   
                   <div className="text-sm mb-2">
-                    <span className="font-semibold">{currentPostData.metrics.likes.toLocaleString()} likes</span>
+                    <span className="font-semibold">
+                      {isUsingInstagramData ? currentPostData.likeCount.toLocaleString() : currentPostData.metrics.likes.toLocaleString()} likes
+                    </span>
                   </div>
                   
                   <div className="text-sm">
-                    <span className="font-semibold">autogram_ai</span> {currentPostData.caption}
+                    <span className="font-semibold">
+                      {isUsingInstagramData ? instagramData.username : 'autogram_ai'}
+                    </span> {currentPostData.caption}
                   </div>
                   
                   <div className="text-xs text-gray-500 mt-2">
-                    View all {currentPostData.metrics.comments} comments
+                    View all {isUsingInstagramData ? currentPostData.commentsCount : currentPostData.metrics.comments} comments
                   </div>
                 </div>
               </div>
@@ -236,7 +299,9 @@ const PerformanceReportsPage = () => {
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
                       <Heart className="w-5 h-5 text-red-500 mr-2" />
-                      <span className="text-2xl font-bold">{currentPostData.metrics.likes.toLocaleString()}</span>
+                      <span className="text-2xl font-bold">
+                        {isUsingInstagramData ? currentPostData.likeCount.toLocaleString() : currentPostData.metrics.likes.toLocaleString()}
+                      </span>
                     </div>
                     <div className="text-sm text-muted-foreground">Likes</div>
                   </div>
@@ -244,7 +309,9 @@ const PerformanceReportsPage = () => {
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
                       <MessageCircle className="w-5 h-5 text-blue-500 mr-2" />
-                      <span className="text-2xl font-bold">{currentPostData.metrics.comments}</span>
+                      <span className="text-2xl font-bold">
+                        {isUsingInstagramData ? currentPostData.commentsCount : currentPostData.metrics.comments}
+                      </span>
                     </div>
                     <div className="text-sm text-muted-foreground">Comments</div>
                   </div>
@@ -252,7 +319,9 @@ const PerformanceReportsPage = () => {
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
                       <Eye className="w-5 h-5 text-green-500 mr-2" />
-                      <span className="text-2xl font-bold">{currentPostData.metrics.reach.toLocaleString()}</span>
+                      <span className="text-2xl font-bold">
+                        {isUsingInstagramData ? (currentPostData.likeCount * 4).toLocaleString() : currentPostData.metrics.reach.toLocaleString()}
+                      </span>
                     </div>
                     <div className="text-sm text-muted-foreground">Reach</div>
                   </div>
@@ -260,7 +329,12 @@ const PerformanceReportsPage = () => {
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="flex items-center justify-center mb-2">
                       <TrendingUp className="w-5 h-5 text-purple-500 mr-2" />
-                      <span className="text-2xl font-bold">{currentPostData.metrics.engagement}%</span>
+                      <span className="text-2xl font-bold">
+                        {isUsingInstagramData ? 
+                          ((currentPostData.likeCount + currentPostData.commentsCount) / (currentPostData.likeCount * 4) * 100).toFixed(1) : 
+                          currentPostData.metrics.engagement
+                        }%
+                      </span>
                     </div>
                     <div className="text-sm text-muted-foreground">Engagement</div>
                   </div>

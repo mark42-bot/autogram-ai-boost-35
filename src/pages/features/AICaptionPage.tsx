@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { MediaUpload } from '@/components/ui/media-upload';
 import { 
   Bot, 
   Sparkles, 
@@ -25,6 +26,8 @@ const AICaptionPage = () => {
   const [inputText, setInputText] = useState('Coffee shop morning vibes');
   const [generatedCaptions, setGeneratedCaptions] = useState<string[]>([]);
   const [postImages, setPostImages] = useState<string[]>([]);
+  const [uploadedMedia, setUploadedMedia] = useState<File[]>([]);
+  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
 
   const instagramPosts = [
     {
@@ -79,6 +82,22 @@ const AICaptionPage = () => {
     "This corner café isn't just a coffee shop - it's a community hub where strangers become friends over shared tables and warm conversations. Here's to the spaces that bring us together ☕❤️ #CommunityVibes #LocalLove #CoffeeConnections"
   ];
 
+  const handleMediaUpload = (files: File[]) => {
+    setUploadedMedia(prev => [...prev, ...files]);
+    
+    // Create URLs for uploaded media
+    const newUrls = files.map(file => URL.createObjectURL(file));
+    setMediaUrls(prev => [...prev, ...newUrls]);
+  };
+
+  const handleRemoveMedia = (index: number) => {
+    // Revoke the URL to free memory
+    URL.revokeObjectURL(mediaUrls[index]);
+    
+    setUploadedMedia(prev => prev.filter((_, i) => i !== index));
+    setMediaUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
   const simulateGeneration = async () => {
     setIsGenerating(true);
     setCurrentStep(0);
@@ -90,11 +109,20 @@ const AICaptionPage = () => {
       
       // Generate images and captions
       const [aiCaptions, images] = await Promise.all([
-        geminiService.generateCaptions(inputText, 6),
-        geminiService.generateImages(inputText, 6)
+        geminiService.generateCaptions(inputText, 6, uploadedMedia),
+        uploadedMedia.length > 0 ? Promise.resolve(mediaUrls) : geminiService.generateImages(inputText, 6)
       ]);
       
-      setPostImages(images);
+      // If user uploaded media, use those for all posts
+      if (uploadedMedia.length > 0) {
+        const allPostImages = [];
+        for (let i = 0; i < 6; i++) {
+          allPostImages.push(mediaUrls[i % mediaUrls.length]);
+        }
+        setPostImages(allPostImages);
+      } else {
+        setPostImages(images);
+      }
       
       // Display captions one by one for visual effect
       for (let i = 0; i < aiCaptions.length; i++) {
@@ -148,6 +176,14 @@ const AICaptionPage = () => {
               <h2 className="text-2xl font-semibold">Generate AI Captions</h2>
             </div>
             
+            {/* Media Upload */}
+            <MediaUpload
+              onMediaUpload={handleMediaUpload}
+              uploadedMedia={uploadedMedia}
+              onRemoveMedia={handleRemoveMedia}
+              className="mb-6"
+            />
+            
             <div className="flex gap-4 mb-6">
               <Input
                 value={inputText}
@@ -157,7 +193,7 @@ const AICaptionPage = () => {
               />
               <Button 
                 onClick={simulateGeneration}
-                disabled={isGenerating || !inputText.trim()}
+                disabled={isGenerating || (!inputText.trim() && uploadedMedia.length === 0)}
                 className="gradient-primary hover-glow"
               >
                 {isGenerating ? (

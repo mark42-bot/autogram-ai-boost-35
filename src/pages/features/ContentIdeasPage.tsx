@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { MediaUpload } from '@/components/ui/media-upload';
 import { 
   Bot, 
   Lightbulb, 
@@ -28,6 +29,8 @@ const ContentIdeasPage = () => {
   const [inputText, setInputText] = useState('Travel photography lifestyle');
   const [generatedIdeas, setGeneratedIdeas] = useState<string[]>([]);
   const [postImages, setPostImages] = useState<string[]>([]);
+  const [uploadedMedia, setUploadedMedia] = useState<File[]>([]);
+  const [mediaUrls, setMediaUrls] = useState<string[]>([]);
 
   const instagramPosts = [
     {
@@ -95,6 +98,22 @@ const ContentIdeasPage = () => {
     { icon: Camera, label: "Photo Carousel", color: "text-green-500" }
   ];
 
+  const handleMediaUpload = (files: File[]) => {
+    setUploadedMedia(prev => [...prev, ...files]);
+    
+    // Create URLs for uploaded media
+    const newUrls = files.map(file => URL.createObjectURL(file));
+    setMediaUrls(prev => [...prev, ...newUrls]);
+  };
+
+  const handleRemoveMedia = (index: number) => {
+    // Revoke the URL to free memory
+    URL.revokeObjectURL(mediaUrls[index]);
+    
+    setUploadedMedia(prev => prev.filter((_, i) => i !== index));
+    setMediaUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
   const simulateGeneration = async () => {
     setIsGenerating(true);
     setCurrentStep(0);
@@ -104,13 +123,22 @@ const ContentIdeasPage = () => {
       // Import Gemini service dynamically
       const { geminiService } = await import('@/services/gemini.service');
       
-      // Generate images and content ideas
+      // Generate content ideas and images
       const [contentIdeas, images] = await Promise.all([
-        geminiService.generateContentIdeas(inputText, 6),
-        geminiService.generateImages(inputText, 6)
+        geminiService.generateContentIdeas(inputText, 6, uploadedMedia),
+        uploadedMedia.length > 0 ? Promise.resolve(mediaUrls) : geminiService.generateImages(inputText, 6)
       ]);
       
-      setPostImages(images);
+      // If user uploaded media, use those for all posts
+      if (uploadedMedia.length > 0) {
+        const allPostImages = [];
+        for (let i = 0; i < 6; i++) {
+          allPostImages.push(mediaUrls[i % mediaUrls.length]);
+        }
+        setPostImages(allPostImages);
+      } else {
+        setPostImages(images);
+      }
       
       // Display ideas one by one for visual effect
       for (let i = 0; i < contentIdeas.length; i++) {
@@ -180,6 +208,14 @@ const ContentIdeasPage = () => {
               <h2 className="text-2xl font-semibold">Generate Content Ideas</h2>
             </div>
             
+            {/* Media Upload */}
+            <MediaUpload
+              onMediaUpload={handleMediaUpload}
+              uploadedMedia={uploadedMedia}
+              onRemoveMedia={handleRemoveMedia}
+              className="mb-6"
+            />
+            
             <div className="flex gap-4 mb-6">
               <Input
                 value={inputText}
@@ -189,7 +225,7 @@ const ContentIdeasPage = () => {
               />
               <Button 
                 onClick={simulateGeneration}
-                disabled={isGenerating || !inputText.trim()}
+                disabled={isGenerating || (!inputText.trim() && uploadedMedia.length === 0)}
                 className="gradient-primary hover-glow"
               >
                 {isGenerating ? (
