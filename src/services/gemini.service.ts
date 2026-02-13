@@ -49,16 +49,26 @@ export class GeminiService {
       let text = response.text().trim();
       
       // Clean up any markdown formatting
-      text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').replace(/^\s*[\[\{]/, '[').replace(/[\]\}]\s*$/, ']');
+      text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      
+      // Find the JSON array in the text
+      const arrayMatch = text.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+        text = arrayMatch[0];
+      }
       
       try {
         const captions = JSON.parse(text);
-        return Array.isArray(captions) ? captions.slice(0, count) : [text];
+        if (Array.isArray(captions)) {
+          return captions.map(c => String(c).trim()).filter(c => c.length > 5).slice(0, count);
+        }
+        return [text];
       } catch {
-        // Enhanced fallback parsing
-        const lines = text.split(/\n|,/).map(line => 
-          line.replace(/^[\s\d\.\-\*"'\[\]]+/, '').replace(/["'\[\]]+$/, '').trim()
-        ).filter(line => line.length > 20);
+        // Enhanced fallback parsing - split by newlines and clean
+        const lines = text
+          .split(/\n/)
+          .map(line => line.replace(/^[\s\d\.\-\*"'\[\],]+/, '').replace(/["'\[\],]+$/, '').trim())
+          .filter(line => line.length > 20 && !line.startsWith('```') && !line.startsWith('['));
         return lines.slice(0, count).length > 0 ? lines.slice(0, count) : this.getFallbackCaptions(count);
       }
     } catch (error) {
@@ -106,15 +116,20 @@ export class GeminiService {
         let text = response.text().trim();
         
         // Clean up formatting
-        text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').replace(/^\s*[\[\{]/, '[').replace(/[\]\}]\s*$/, ']');
+        text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+        
+        const arrayMatch = text.match(/\[[\s\S]*?\]/);
+        if (arrayMatch) {
+          text = arrayMatch[0];
+        }
         
         try {
           const hashtags = JSON.parse(text);
-          hashtagSets.push(Array.isArray(hashtags) ? hashtags.slice(0, 20) : text.split(' ').filter(h => h.startsWith('#')).slice(0, 20));
+          hashtagSets.push(Array.isArray(hashtags) ? hashtags.map(h => String(h).trim()).slice(0, 20) : text.split(' ').filter(h => h.startsWith('#')).slice(0, 20));
         } catch {
           // Enhanced fallback parsing
           const hashtags = text.split(/[\s,\n]+/)
-            .map(h => h.trim())
+            .map(h => h.replace(/["'\[\]]/g, '').trim())
             .filter(h => h.includes('#'))
             .map(h => h.startsWith('#') ? h : '#' + h.replace(/[^\w]/g, ''))
             .slice(0, 20);
@@ -219,16 +234,25 @@ export class GeminiService {
       let text = response.text().trim();
       
       // Clean up formatting
-      text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '').replace(/^\s*[\[\{]/, '[').replace(/[\]\}]\s*$/, ']');
+      text = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      
+      const arrayMatch = text.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+        text = arrayMatch[0];
+      }
       
       try {
         const ideas = JSON.parse(text);
-        return Array.isArray(ideas) ? ideas.slice(0, count) : [text];
+        if (Array.isArray(ideas)) {
+          return ideas.map(i => String(i).trim()).filter(i => i.length > 10).slice(0, count);
+        }
+        return [text];
       } catch {
         // Enhanced fallback parsing
-        const lines = text.split(/\n|,/).map(line => 
-          line.replace(/^[\s\d\.\-\*"'\[\]]+/, '').replace(/["'\[\]]+$/, '').trim()
-        ).filter(line => line.length > 30);
+        const lines = text
+          .split(/\n/)
+          .map(line => line.replace(/^[\s\d\.\-\*"'\[\],]+/, '').replace(/["'\[\],]+$/, '').trim())
+          .filter(line => line.length > 20 && !line.startsWith('```') && !line.startsWith('['));
         return lines.slice(0, count).length > 0 ? lines.slice(0, count) : this.getFallbackContentIdeas(count);
       }
     } catch (error) {
