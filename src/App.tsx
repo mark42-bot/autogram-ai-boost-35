@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { InstagramAuthProvider } from "@/contexts/InstagramAuthContext";
 import Home from "./pages/Home";
 import Pricing from "./pages/Pricing";
 import Login from "./pages/Login";
@@ -24,6 +25,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <TooltipProvider>
+        <InstagramAuthProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -45,6 +47,7 @@ const App = () => (
           </Routes>
           <Chatbot />
         </BrowserRouter>
+        </InstagramAuthProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
