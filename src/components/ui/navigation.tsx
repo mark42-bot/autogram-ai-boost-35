@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useInstagramAuth } from '@/contexts/InstagramAuthContext';
 import { 
   Menu, 
   X, 
@@ -10,7 +11,8 @@ import {
   BarChart3,
   Calendar,
   Workflow,
-  Bot
+  Bot,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +21,7 @@ const Navigation = () => {
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [isProductsClicked, setIsProductsClicked] = useState(false);
   const location = useLocation();
+  const { user, isConnected, logout } = useInstagramAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -113,16 +116,34 @@ const Navigation = () => {
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            <Link to="/login">
-              <Button variant="ghost" size="sm">
-                Login
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button size="sm" className="gradient-primary hover-glow transition-smooth">
-                Get Started Free
-              </Button>
-            </Link>
+            {isConnected ? (
+              <>
+                {user?.profilePictureUrl && (
+                  <img 
+                    src={user.profilePictureUrl} 
+                    alt={user.username}
+                    className="w-8 h-8 rounded-full object-cover border-2 border-primary/30"
+                  />
+                )}
+                <Button variant="ghost" size="sm" onClick={logout} className="text-destructive hover:text-destructive">
+                  <LogOut className="w-4 h-4 mr-1" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button size="sm" className="gradient-primary hover-glow transition-smooth">
+                    Get Started Free
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -177,16 +198,25 @@ const Navigation = () => {
               ))}
               
               <div className="border-t border-border/20 pt-4 space-y-2">
-                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    Login
+                {isConnected ? (
+                  <Button variant="ghost" className="w-full justify-start text-destructive hover:text-destructive" onClick={() => { logout(); setIsMenuOpen(false); }}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
                   </Button>
-                </Link>
-                <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full gradient-primary hover-glow">
-                    Get Started Free
-                  </Button>
-                </Link>
+                ) : (
+                  <>
+                    <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start">
+                        Login
+                      </Button>
+                    </Link>
+                    <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                      <Button className="w-full gradient-primary hover-glow">
+                        Get Started Free
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>

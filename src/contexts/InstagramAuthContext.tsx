@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { getInstagramAuthUrl, exchangeCodeForToken, getLongLivedToken, getInstagramUserProfile, getInstagramUserMedia, getMediaInsights } from '@/instagram/auth';
+import type { InstagramGraphMedia, InstagramMediaInsight } from '@/instagram/types';
 
 export interface InstagramPost {
   id: string;
@@ -33,6 +35,7 @@ interface InstagramAuthContextType {
   isConnecting: boolean;
   login: () => Promise<void>;
   logout: () => void;
+  handleOAuthCallback: (code: string) => Promise<void>;
 }
 
 const InstagramAuthContext = createContext<InstagramAuthContextType>({
@@ -41,131 +44,124 @@ const InstagramAuthContext = createContext<InstagramAuthContextType>({
   isConnecting: false,
   login: async () => {},
   logout: () => {},
+  handleOAuthCallback: async () => {},
 });
 
 export const useInstagramAuth = () => useContext(InstagramAuthContext);
+
+// Helper: convert Graph API media to our InstagramPost format
+function mapGraphMediaToPost(media: InstagramGraphMedia, insights?: InstagramMediaInsight[]): InstagramPost {
+  const getInsightValue = (name: string) => {
+    const insight = insights?.find(i => i.name === name);
+    return insight?.values?.[0]?.value || 0;
+  };
+
+  const reach = getInsightValue('reach');
+  const impressions = getInsightValue('impressions');
+  const saved = getInsightValue('saved');
+  const engagementVal = getInsightValue('engagement');
+  const likeCount = media.like_count || 0;
+  const commentsCount = media.comments_count || 0;
+
+  return {
+    id: media.id,
+    mediaType: media.media_type,
+    mediaUrl: media.media_url || media.thumbnail_url || '',
+    permalink: media.permalink,
+    caption: media.caption || '',
+    timestamp: media.timestamp,
+    likeCount,
+    commentsCount,
+    reach: reach || undefined,
+    impressions: impressions || undefined,
+    saves: saved || undefined,
+    engagement: reach > 0 ? parseFloat(((engagementVal / reach) * 100).toFixed(1)) : undefined,
+  };
+}
+
+const ACCESS_TOKEN_KEY = 'instagram_access_token';
 
 export const InstagramAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<InstagramUser | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
-  const login = useCallback(async () => {
-    setIsConnecting(true);
-    // Simulate Instagram OAuth flow
-    await new Promise(resolve => setTimeout(resolve, 2000));
+  // Restore session from stored token on mount
+  useEffect(() => {
+    const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    if (storedToken) {
+      fetchUserData(storedToken).catch(() => {
+        localStorage.removeItem(ACCESS_TOKEN_KEY);
+      });
+    }
+  }, []);
 
-    const mockUser: InstagramUser = {
-      id: '12345678',
-      username: 'your_brand',
-      accountType: 'BUSINESS',
-      mediaCount: 247,
-      followersCount: 15420,
-      followingCount: 892,
-      profilePictureUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-      recentPosts: [
-        {
-          id: '1',
-          mediaType: 'IMAGE',
-          mediaUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop',
-          permalink: 'https://instagram.com/p/demo1',
-          caption: 'Building dreams one step at a time ✨ #entrepreneurlife #motivation',
-          timestamp: '2024-01-15T10:30:00Z',
-          likeCount: 2847,
-          commentsCount: 156,
-          shares: 89,
-          reach: 12400,
-          impressions: 18700,
-          saves: 234,
-          engagement: 26.8
-        },
-        {
-          id: '2',
-          mediaType: 'IMAGE',
-          mediaUrl: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&h=400&fit=crop',
-          permalink: 'https://instagram.com/p/demo2',
-          caption: 'Coffee and productivity ☕ Ready to tackle Monday! #mondaymotivation',
-          timestamp: '2024-01-14T08:15:00Z',
-          likeCount: 1923,
-          commentsCount: 87,
-          shares: 45,
-          reach: 8760,
-          impressions: 13200,
-          saves: 167,
-          engagement: 23.4
-        },
-        {
-          id: '3',
-          mediaType: 'IMAGE',
-          mediaUrl: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=400&fit=crop',
-          permalink: 'https://instagram.com/p/demo3',
-          caption: 'Team collaboration at its finest! 🚀 #teamwork #innovation',
-          timestamp: '2024-01-13T16:45:00Z',
-          likeCount: 3421,
-          commentsCount: 203,
-          shares: 178,
-          reach: 15670,
-          impressions: 22100,
-          saves: 298,
-          engagement: 31.2
-        },
-        {
-          id: '4',
-          mediaType: 'IMAGE',
-          mediaUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=400&fit=crop',
-          permalink: 'https://instagram.com/p/demo4',
-          caption: 'Data-driven decisions leading the way 📊 #analytics #growth',
-          timestamp: '2024-01-12T14:20:00Z',
-          likeCount: 1567,
-          commentsCount: 234,
-          shares: 89,
-          reach: 7234,
-          impressions: 11500,
-          saves: 345,
-          engagement: 28.1
-        },
-        {
-          id: '5',
-          mediaType: 'IMAGE',
-          mediaUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=400&fit=crop',
-          permalink: 'https://instagram.com/p/demo5',
-          caption: 'Customer success stories fuel our passion! 💡 #success #stories',
-          timestamp: '2024-01-11T11:00:00Z',
-          likeCount: 2134,
-          commentsCount: 187,
-          shares: 123,
-          reach: 8765,
-          impressions: 14300,
-          saves: 456,
-          engagement: 33.5
-        },
-        {
-          id: '6',
-          mediaType: 'IMAGE',
-          mediaUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=400&fit=crop',
-          permalink: 'https://instagram.com/p/demo6',
-          caption: 'Innovation never stops! 🔥 Pushing boundaries today #innovation',
-          timestamp: '2024-01-10T09:30:00Z',
-          likeCount: 1823,
-          commentsCount: 298,
-          shares: 145,
-          reach: 6789,
-          impressions: 10800,
-          saves: 389,
-          engagement: 35.2
+  // Fetch user profile and media using access token
+  const fetchUserData = async (accessToken: string) => {
+    const profile = await getInstagramUserProfile(accessToken);
+    const mediaResponse = await getInstagramUserMedia(accessToken);
+
+    // Fetch insights for each post (may fail for some)
+    const postsWithInsights: InstagramPost[] = await Promise.all(
+      mediaResponse.data.map(async (media) => {
+        try {
+          const insightsResponse = await getMediaInsights(accessToken, media.id);
+          return mapGraphMediaToPost(media, insightsResponse.data);
+        } catch {
+          return mapGraphMediaToPost(media);
         }
-      ]
-    };
+      })
+    );
 
-    setUser(mockUser);
-    setIsConnecting(false);
+    setUser({
+      id: profile.id,
+      username: profile.username,
+      accountType: profile.account_type,
+      mediaCount: profile.media_count,
+      followersCount: profile.followers_count || 0,
+      followingCount: profile.follows_count || 0,
+      profilePictureUrl: profile.profile_picture_url || '',
+      recentPosts: postsWithInsights,
+    });
+  };
+
+  // Redirect to Instagram OAuth page
+  const login = useCallback(async () => {
+    const authUrl = getInstagramAuthUrl();
+    window.location.href = authUrl;
+  }, []);
+
+  // Handle the OAuth callback (exchange code for token, fetch data)
+  const handleOAuthCallback = useCallback(async (code: string) => {
+    setIsConnecting(true);
+    try {
+      // Exchange auth code for short-lived token
+      const tokenResponse = await exchangeCodeForToken(code);
+
+      // Exchange for long-lived token
+      const longLivedResponse = await getLongLivedToken(tokenResponse.access_token);
+      const accessToken = longLivedResponse.access_token;
+
+      // Store token
+      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+
+      // Fetch user data
+      await fetchUserData(accessToken);
+    } catch (error) {
+      console.error('Instagram OAuth error:', error);
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      throw error;
+    } finally {
+      setIsConnecting(false);
+    }
   }, []);
 
   const logout = useCallback(() => {
     setUser(null);
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
   }, []);
 
   return (
-    <InstagramAuthContext.Provider value={{ user, isConnected: !!user, isConnecting, login, logout }}>
+    <InstagramAuthContext.Provider value={{ user, isConnected: !!user, isConnecting, login, logout, handleOAuthCallback }}>
       {children}
     </InstagramAuthContext.Provider>
   );

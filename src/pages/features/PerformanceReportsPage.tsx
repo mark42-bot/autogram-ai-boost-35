@@ -63,11 +63,15 @@ const PerformanceReportsPage = () => {
 
   const post = posts[currentPost];
 
-  const getInsights = (idx: number) => [
-    `Peak engagement at ${['7-9 PM', '12-2 PM', '9-11 AM', '3-5 PM', '6-8 PM', '8-10 AM'][idx % 6]}`,
-    `High ${['save', 'share', 'comment', 'like'][idx % 4]} rate indicates valuable content`,
-    `${['Strong community engagement', 'Viral potential detected', 'Consistent audience growth', 'Optimal content frequency'][idx % 4]}`
-  ];
+  const getInsights = () => {
+    if (!post) return [];
+    const insights: string[] = [];
+    if (post.engagement) insights.push(`Engagement rate of ${post.engagement}% on this post`);
+    if (post.reach) insights.push(`Reached ${post.reach.toLocaleString()} unique accounts`);
+    if (post.saves) insights.push(`${post.saves.toLocaleString()} saves indicate high-value content`);
+    if (insights.length === 0) insights.push('Connect your account to see detailed insights');
+    return insights;
+  };
 
   return (
     <div className="min-h-screen bg-background py-16 px-4 sm:px-6 lg:px-8">
@@ -141,8 +145,8 @@ const PerformanceReportsPage = () => {
                         <div className="text-white text-center animate-fade-in">
                           <div className="text-2xl font-bold mb-2">
                             {animationStep === 1 && `❤️ ${post.likeCount.toLocaleString()}`}
-                            {animationStep === 2 && `👀 ${(post.reach || post.likeCount * 4).toLocaleString()}`}
-                            {animationStep === 3 && `📊 ${post.engagement || ((post.likeCount + post.commentsCount) / (post.reach || post.likeCount * 4) * 100).toFixed(1)}%`}
+                            {animationStep === 2 && `👀 ${(post.reach || 0).toLocaleString()}`}
+                            {animationStep === 3 && `📊 ${post.engagement ? `${post.engagement}%` : 'N/A'}`}
                           </div>
                           <div className="text-sm">
                             {animationStep === 1 && 'Total Likes'}
@@ -201,7 +205,7 @@ const PerformanceReportsPage = () => {
                     <div className="text-center p-4 bg-muted/50 rounded-lg">
                       <div className="flex items-center justify-center mb-2">
                         <Eye className="w-5 h-5 text-green-500 mr-2" />
-                        <span className="text-2xl font-bold">{(post.reach || post.likeCount * 4).toLocaleString()}</span>
+                        <span className="text-2xl font-bold">{(post.reach || 0).toLocaleString()}</span>
                       </div>
                       <div className="text-sm text-muted-foreground">Reach</div>
                     </div>
@@ -209,7 +213,7 @@ const PerformanceReportsPage = () => {
                       <div className="flex items-center justify-center mb-2">
                         <TrendingUp className="w-5 h-5 text-purple-500 mr-2" />
                         <span className="text-2xl font-bold">
-                          {post.engagement || ((post.likeCount + post.commentsCount) / (post.reach || post.likeCount * 4) * 100).toFixed(1)}%
+                          {post.engagement ? `${post.engagement}%` : 'N/A'}
                         </span>
                       </div>
                       <div className="text-sm text-muted-foreground">Engagement</div>
@@ -219,9 +223,9 @@ const PerformanceReportsPage = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Engagement Rate</span>
-                      <span className="text-sm text-muted-foreground">{post.engagement || 26.8}%</span>
+                      <span className="text-sm text-muted-foreground">{post.engagement ? `${post.engagement}%` : 'N/A'}</span>
                     </div>
-                    <Progress value={post.engagement || 26.8} className="h-2" />
+                    <Progress value={post.engagement || 0} className="h-2" />
                   </div>
                 </CardContent>
               </Card>
@@ -235,7 +239,7 @@ const PerformanceReportsPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {getInsights(currentPost).map((insight, index) => (
+                    {getInsights().map((insight, index) => (
                       <div key={index} className="flex items-start gap-3">
                         <div className="w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
                           {index + 1}
@@ -271,24 +275,24 @@ const PerformanceReportsPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">
-                  {posts.length > 0 ? (posts.reduce((s, p) => s + (p.engagement || 25), 0) / posts.length).toFixed(1) : '0'}%
+                  {posts.length > 0 && posts.some(p => p.engagement) ? (posts.reduce((s, p) => s + (p.engagement || 0), 0) / posts.filter(p => p.engagement).length).toFixed(1) : '0'}%
                 </div>
                 <div className="text-sm text-muted-foreground">Avg. Engagement</div>
-                <Badge variant="secondary" className="mt-2"><TrendingUp className="w-3 h-3 mr-1" />+12%</Badge>
+                <Badge variant="secondary" className="mt-2"><TrendingUp className="w-3 h-3 mr-1" />Live</Badge>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">
-                  {posts.length > 0 ? (posts.reduce((s, p) => s + (p.reach || p.likeCount * 4), 0) / 1000).toFixed(1) : '0'}K
+                  {posts.length > 0 ? (posts.reduce((s, p) => s + (p.reach || 0), 0) / 1000).toFixed(1) : '0'}K
                 </div>
                 <div className="text-sm text-muted-foreground">Total Reach</div>
-                <Badge variant="secondary" className="mt-2"><TrendingUp className="w-3 h-3 mr-1" />+8%</Badge>
+                <Badge variant="secondary" className="mt-2"><TrendingUp className="w-3 h-3 mr-1" />Live</Badge>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">
                   {user?.followersCount ? (user.followersCount / 1000).toFixed(1) : '0'}K
                 </div>
                 <div className="text-sm text-muted-foreground">Followers</div>
-                <Badge variant="secondary" className="mt-2"><TrendingUp className="w-3 h-3 mr-1" />+25%</Badge>
+                <Badge variant="secondary" className="mt-2"><TrendingUp className="w-3 h-3 mr-1" />Live</Badge>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary mb-2">{posts.length}</div>

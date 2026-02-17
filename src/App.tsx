@@ -17,6 +17,7 @@ import TutorialPage from "./pages/TutorialPage";
 import PerformanceReportsPage from "./pages/features/PerformanceReportsPage";
 import MultiTimezonePage from "./pages/features/MultiTimezonePage";
 import BulkSchedulingPage from "./pages/features/BulkSchedulingPage";
+import InstagramCallback from "./pages/InstagramCallback";
 import Chatbot from "./components/ui/chatbot";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/tutorial" element={<TutorialPage />} />
             <Route path="/tutorials" element={<TutorialPage />} />
+            <Route path="/auth/instagram/callback" element={<InstagramCallback />} />
             <Route path="/features/performance-reports" element={<PerformanceReportsPage />} />
             <Route path="/features/multi-timezone" element={<MultiTimezonePage />} />
             <Route path="/features/bulk-scheduling" element={<BulkSchedulingPage />} />
