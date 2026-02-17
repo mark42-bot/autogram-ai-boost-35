@@ -33,27 +33,16 @@ const AudienceInsightsPage = () => {
     }
   }, [isConnected, currentPost]);
 
-  // Simulated audience data per post
-  const getAudienceData = (postIndex: number) => ({
-    demographics: {
-      age: { '18-24': 25 + postIndex * 3, '25-34': 42 - postIndex * 2, '35-44': 20 + postIndex, '45+': 13 - postIndex },
-      gender: { female: 55 + postIndex * 2, male: 42 - postIndex * 2, other: 3 },
-    },
-    geography: [
-      { name: 'United States', percentage: 45 - postIndex * 2, engagement: 8.2 + postIndex * 0.3 },
-      { name: 'Canada', percentage: 18 + postIndex, engagement: 9.1 },
-      { name: 'United Kingdom', percentage: 12, engagement: 7.8 + postIndex * 0.2 },
-      { name: 'Australia', percentage: 10 + postIndex, engagement: 8.9 },
-      { name: 'Germany', percentage: 8, engagement: 7.5 + postIndex * 0.4 },
-    ],
-    devices: { mobile: 78 + postIndex, desktop: 15 - postIndex, tablet: 7 },
-    interests: [
-      { topic: 'Entrepreneurship', percentage: 85 - postIndex * 3 },
-      { topic: 'Technology', percentage: 72 + postIndex * 2 },
-      { topic: 'Design', percentage: 68 - postIndex },
-      { topic: 'Marketing', percentage: 61 + postIndex * 2 },
-      { topic: 'Productivity', percentage: 59 + postIndex },
-    ]
+  // Audience data derived from real post metrics when available
+  const getAudienceData = () => ({
+    postMetrics: posts.map(p => ({
+      likes: p.likeCount,
+      comments: p.commentsCount,
+      reach: p.reach || 0,
+      impressions: p.impressions || 0,
+      saves: p.saves || 0,
+      engagement: p.engagement || 0,
+    })),
   });
 
   if (!isConnected) {
@@ -81,7 +70,7 @@ const AudienceInsightsPage = () => {
   }
 
   const post = posts[currentPost];
-  const audience = getAudienceData(currentPost);
+  const audience = getAudienceData();
 
   return (
     <div className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -146,98 +135,85 @@ const AudienceInsightsPage = () => {
                 </div>
               </div>
 
-              {/* Demographics */}
+              {/* Post Metrics */}
               <div className={`p-6 space-y-6 transition-all duration-700 ${showInsights ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <h3 className="text-xl font-bold flex items-center gap-2">
                   <Users className="w-5 h-5 text-primary" />
-                  Demographics
+                  Post Metrics
                 </h3>
 
                 <Card className="glass border-border/20 p-4">
-                  <h4 className="font-semibold mb-3">Age Groups</h4>
-                  <div className="space-y-2">
-                    {Object.entries(audience.demographics.age).map(([age, pct]) => (
-                      <div key={age} className="flex items-center justify-between">
-                        <span className="text-sm">{age}</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={pct} className="w-16 h-2" />
-                          <span className="text-sm font-medium w-8">{pct}%</span>
-                        </div>
-                      </div>
-                    ))}
+                  <h4 className="font-semibold mb-3">Engagement</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Likes</span>
+                      <span className="text-sm font-medium">{post.likeCount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Comments</span>
+                      <span className="text-sm font-medium">{post.commentsCount.toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Reach</span>
+                      <span className="text-sm font-medium">{(post.reach || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Impressions</span>
+                      <span className="text-sm font-medium">{(post.impressions || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Saves</span>
+                      <span className="text-sm font-medium">{(post.saves || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Engagement Rate</span>
+                      <span className="text-sm font-medium">{post.engagement ? `${post.engagement}%` : 'N/A'}</span>
+                    </div>
                   </div>
                 </Card>
 
-                <Card className="glass border-border/20 p-4">
-                  <h4 className="font-semibold mb-3">Gender</h4>
-                  <div className="space-y-2">
-                    {Object.entries(audience.demographics.gender).map(([gender, pct]) => (
-                      <div key={gender} className="flex items-center justify-between">
-                        <span className="text-sm capitalize">{gender}</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={pct} className="w-16 h-2" />
-                          <span className="text-sm font-medium w-8">{pct}%</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-
-                <Card className="glass border-border/20 p-4">
+                <Card className="glass border-border/20 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Smartphone className="w-4 h-4" /> Devices
+                    <Smartphone className="w-4 h-4" /> Audience Insights
                   </h4>
-                  <div className="space-y-2">
-                    {Object.entries(audience.devices).map(([device, pct]) => (
-                      <div key={device} className="flex items-center justify-between">
-                        <span className="text-sm capitalize">{device}</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={pct} className="w-16 h-2" />
-                          <span className="text-sm font-medium w-8">{pct}%</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Detailed audience demographics (age, gender, location) are available via the Instagram Graph API for Business/Creator accounts. 
+                    Connect your account to see real audience data here.
+                  </p>
                 </Card>
               </div>
 
-              {/* Geography & Interests */}
+              {/* Summary */}
               <div className={`p-6 space-y-6 transition-all duration-700 delay-300 ${showInsights ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <h3 className="text-xl font-bold flex items-center gap-2">
                   <Globe className="w-5 h-5 text-primary" />
-                  Geography
+                  Account Summary
                 </h3>
 
                 <Card className="glass border-border/20 p-4">
-                  <h4 className="font-semibold mb-3">Top Countries</h4>
+                  <h4 className="font-semibold mb-3">Overall Stats</h4>
                   <div className="space-y-3">
-                    {audience.geography.map((country, idx) => (
-                      <div key={country.name} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">#{idx + 1}</span>
-                          <span className="text-sm">{country.name}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium">{country.percentage}%</span>
-                          <Badge variant="outline" className="text-xs">{country.engagement}% eng</Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-
-                <Card className="glass border-border/20 p-4">
-                  <h4 className="font-semibold mb-3">Top Interests</h4>
-                  <div className="space-y-2">
-                    {audience.interests.map((interest) => (
-                      <div key={interest.topic} className="flex items-center justify-between">
-                        <span className="text-sm">{interest.topic}</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={interest.percentage} className="w-16 h-2" />
-                          <span className="text-sm font-medium w-8">{interest.percentage}%</span>
-                        </div>
-                      </div>
-                    ))}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Total Posts</span>
+                      <span className="text-sm font-medium">{posts.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Total Likes</span>
+                      <span className="text-sm font-medium">{posts.reduce((s, p) => s + p.likeCount, 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Total Comments</span>
+                      <span className="text-sm font-medium">{posts.reduce((s, p) => s + p.commentsCount, 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Avg Engagement</span>
+                      <span className="text-sm font-medium">
+                        {posts.length > 0 && posts.some(p => p.engagement) 
+                          ? `${(posts.reduce((s, p) => s + (p.engagement || 0), 0) / posts.filter(p => p.engagement).length).toFixed(1)}%`
+                          : 'N/A'
+                        }
+                      </span>
+                    </div>
                   </div>
                 </Card>
               </div>

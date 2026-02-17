@@ -166,7 +166,7 @@ const RealTimeAnalyticsPage = () => {
                           <Eye className="w-5 h-5 text-orange-500" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold">{(post.reach || post.likeCount * 4).toLocaleString()}</p>
+                          <p className="text-2xl font-bold">{(post.reach || 0).toLocaleString()}</p>
                           <p className="text-xs text-muted-foreground">Reach</p>
                         </div>
                       </div>
@@ -177,7 +177,7 @@ const RealTimeAnalyticsPage = () => {
                           <TrendingUp className="w-5 h-5 text-green-500" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold">{post.engagement || ((post.likeCount + post.commentsCount) / (post.reach || post.likeCount * 4) * 100).toFixed(1)}%</p>
+                          <p className="text-2xl font-bold">{post.engagement ? `${post.engagement}%` : 'N/A'}</p>
                           <p className="text-xs text-muted-foreground">Engagement</p>
                         </div>
                       </div>
@@ -193,15 +193,15 @@ const RealTimeAnalyticsPage = () => {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm">Impressions</span>
-                        <span className="text-sm font-medium">{(post.impressions || post.likeCount * 6).toLocaleString()}</span>
+                        <span className="text-sm font-medium">{(post.impressions || 0).toLocaleString()}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm">Saves</span>
-                        <span className="text-sm font-medium">{(post.saves || Math.floor(post.likeCount * 0.08)).toLocaleString()}</span>
+                        <span className="text-sm font-medium">{(post.saves || 0).toLocaleString()}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm">Shares</span>
-                        <span className="text-sm font-medium">{(post.shares || Math.floor(post.likeCount * 0.03)).toLocaleString()}</span>
+                        <span className="text-sm font-medium">{(post.shares || 0).toLocaleString()}</span>
                       </div>
                     </div>
                   </Card>
@@ -209,9 +209,9 @@ const RealTimeAnalyticsPage = () => {
                   <Card className="glass border-border/20 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
                     <h4 className="font-semibold mb-3">AI Insights</h4>
                     <div className="space-y-2 text-sm text-muted-foreground">
-                      <p>• This post has <span className="text-primary font-medium">{post.engagement || 26.8}%</span> engagement rate</p>
-                      <p>• <span className="text-green-500 font-medium">Strong</span> audience interaction via comments</p>
-                      <p>• Posted at an <span className="text-primary font-medium">optimal time</span> for your audience</p>
+                      <p>• Engagement rate: <span className="text-primary font-medium">{post.engagement ? `${post.engagement}%` : 'N/A'}</span></p>
+                      <p>• Reach: <span className="font-medium">{(post.reach || 0).toLocaleString()}</span> | Impressions: <span className="font-medium">{(post.impressions || 0).toLocaleString()}</span></p>
+                      <p>• Saves: <span className="font-medium">{(post.saves || 0).toLocaleString()}</span></p>
                     </div>
                   </Card>
                 </div>
